@@ -1,0 +1,51 @@
+import Vue from "vue";
+import {
+  Button,
+  Layout,
+  Menu,
+  Icon,
+  Form,
+  Input,
+  Tabs,
+  Checkbox,
+  Row,
+  Col,
+  Avatar,
+  Divider,
+  Card,
+  List,
+  Tooltip,
+  Dropdown,
+  Select,
+  Radio,
+  DatePicker,
+  Table,
+  Tag,
+  Modal,
+  TreeSelect,
+  Alert
+} from "ant-design-vue";
+Vue.use(Alert);
+Vue.use(TreeSelect);
+Vue.use(Button);
+Vue.use(Layout);
+Vue.use(Menu);
+Vue.use(Icon);
+Vue.use(Form);
+Vue.use(Input);
+Vue.use(Tabs);
+Vue.use(Checkbox);
+Vue.use(Row);
+Vue.use(Col);
+Vue.use(Avatar);
+Vue.use(Divider);
+Vue.use(Card);
+Vue.use(List);
+Vue.use(Tooltip);
+Vue.use(Dropdown);
+Vue.use(Select);
+Vue.use(Radio);
+Vue.use(DatePicker);
+Vue.use(Table);
+Vue.use(Tag);
+Vue.use(Modal);
