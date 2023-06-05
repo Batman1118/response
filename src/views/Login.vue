@@ -6,55 +6,77 @@
 	</div>
   <div class="login">
 
-    <a-form
+    <a-form-model
       layout="horizontal"
-      :form="form"
-      @submit="handleSubmit"
+      :model="form"
+      ref="ruleForm"
+      :rules="rules"
       class="login-form"
     >
-      <a-tabs default-active-key="1" @change="callback">
-        <a-tab-pane key="1" tab="用户名登录">
-          <a-form-item>
-            <a-input
-              placeholder="请输入用户"
-              size="large"
-            >
-              <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />
-            </a-input>
-          </a-form-item>
-          <a-form-item>
-            <a-input-password
-              type="password"
-              placeholder="请输入密码"
-              size="large"
-            >
-              <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
-            </a-input-password>
-          </a-form-item>
-        </a-tab-pane>
-        <a-tab-pane key="2" tab="验证码登录" force-render>
-          <a-form-item>
-            <a-input
-              placeholder="手机号"
-              size="large"
-            >
-              <a-icon slot="prefix" type="mobile" style="color:rgba(0,0,0,.25)" />
-            </a-input>
-          </a-form-item>
-          <a-form-item>
-            <a-row :gutter="8">
-              <a-col :span="17">
-                <a-input placeholder="验证码">
-                  <a-icon slot="prefix" type="mobile" style="color:rgba(0,0,0,.25)" />
-                </a-input>
-              </a-col>
-              <a-col :span="7">
-                <a-button style="width: 100%">获取验证码</a-button>
-              </a-col>
-            </a-row>
-          </a-form-item>
-        </a-tab-pane>
-      </a-tabs>
+      <a-form-model-item ref="name" prop="name">
+        <a-input
+            placeholder="请输入用户"
+            size="large"
+            v-model="form.name"
+        >
+          <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />
+        </a-input>
+      </a-form-model-item>
+      <a-form-model-item ref="pwd" prop="pwd">
+        <a-input-password
+            type="password"
+            placeholder="请输入密码"
+            size="large"
+            v-model="form.pwd"
+        >
+          <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
+        </a-input-password>
+      </a-form-model-item>
+<!--      <a-tabs default-active-key="1" @change="callback">-->
+<!--        <a-tab-pane key="1" tab="用户名登录">-->
+<!--          <a-form-item>-->
+<!--            <a-input-->
+<!--              placeholder="请输入用户"-->
+<!--              size="large"-->
+<!--              v-model="form.name"-->
+<!--            >-->
+<!--              <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />-->
+<!--            </a-input>-->
+<!--          </a-form-item>-->
+<!--          <a-form-item>-->
+<!--            <a-input-password-->
+<!--              type="password"-->
+<!--              placeholder="请输入密码"-->
+<!--              size="large"-->
+<!--              v-model="form.pwd"-->
+<!--            >-->
+<!--              <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />-->
+<!--            </a-input-password>-->
+<!--          </a-form-item>-->
+<!--        </a-tab-pane>-->
+<!--        <a-tab-pane key="2" tab="验证码登录" force-render>-->
+<!--          <a-form-item>-->
+<!--            <a-input-->
+<!--              placeholder="手机号"-->
+<!--              size="large"-->
+<!--            >-->
+<!--              <a-icon slot="prefix" type="mobile" style="color:rgba(0,0,0,.25)" />-->
+<!--            </a-input>-->
+<!--          </a-form-item>-->
+<!--          <a-form-item>-->
+<!--            <a-row :gutter="8">-->
+<!--              <a-col :span="17">-->
+<!--                <a-input placeholder="验证码">-->
+<!--                  <a-icon slot="prefix" type="mobile" style="color:rgba(0,0,0,.25)" />-->
+<!--                </a-input>-->
+<!--              </a-col>-->
+<!--              <a-col :span="7">-->
+<!--                <a-button style="width: 100%">获取验证码</a-button>-->
+<!--              </a-col>-->
+<!--            </a-row>-->
+<!--          </a-form-item>-->
+<!--        </a-tab-pane>-->
+<!--      </a-tabs>-->
       <div style="margin-bottom: 20px">
         <a-checkbox :checked="true" style="color:#fff;">自动登录</a-checkbox>
         <a style="float: right">忘记密码</a>
@@ -65,43 +87,61 @@
           html-type="submit"
           style="width: 100%"
           size="large"
+          @click="handleSubmit"
         >
           登录
         </a-button>
       </a-form-item>
 	  <center><p>技术支持：中国科学院</p></center>
-    </a-form>
+    </a-form-model>
   </div>
   </div>
 </template>
 
 <script>
+
+import { Login, getMenuAdmin } from "@/api/login";
+import Cookies from 'js-cookie';
 export default {
   name: "login",
   data() {
     return {
       // hasErrors,
-      form: this.$form.createForm(this),
+      // form: this.$form.createForm(this),
+      form: {
+        name: '',
+        pwd: ''
+      },
+      rules: {
+        name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        pwd: [{ required: true, message: '请输入用户密码', trigger: 'blur' }]
+      },
+      menu: []
     };
   },
   mounted() {
-    this.$nextTick(() => {
-      this.form.validateFields();
-    });
+    // this.$nextTick(() => {
+    //   this.form.validateFields();
+    // });
   },
   methods: {
-    handleSubmit(e) {
-      e.preventDefault();
-      this.form.validateFields((err, values) => {
-        if (!err) {
-          console.log("Received values of form: ", values);
-          this.$router.push({ name: "default" });
+    handleSubmit() {
+      this.$refs.ruleForm.validate(async (valid) => {
+        if (valid) {
+          const res = await Login(this.form)
+          if (res.data.code === 100) {
+            Cookies.set('resTk', res.data.data.tk);
+            Cookies.set('resUid', res.data.data.uid);
+          } else {
+            console.log(res.data.msg)
+            this.$message.warning(res.data.msg);
+          }
+        } else {
+          console.log('error submit!!');
+          return false;
         }
       });
-    },
-    callback(key) {
-      console.log(key);
-    },
+    }
   },
 };
 </script>

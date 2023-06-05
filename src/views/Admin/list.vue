@@ -1,57 +1,76 @@
 <template>
 	<div class="inner">
-		<a-radio-group v-model="category">
-			<a-radio-button value="default">
-				全部
-			</a-radio-button>
-			<a-radio-button value="1">
-				待叫应
-			</a-radio-button>
-			<a-radio-button value="2">
-				已叫应
-			</a-radio-button>
-			<a-radio-button value="3">
-				超时未叫应
-			</a-radio-button>
-		</a-radio-group>
-		<div style="float:right">
-			时间区间筛选：<a-range-picker :placeholder="['开始时间', '结束时间']" @change="onChange" />
-		</div>
-		<br /><br />
+    <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
+      <a-col :span="8">
+        <a-radio-group v-model="category">
+          <a-radio-button value="default">
+            全部
+          </a-radio-button>
+          <a-radio-button value="1">
+            待叫应
+          </a-radio-button>
+          <a-radio-button value="2">
+            已叫应
+          </a-radio-button>
+          <a-radio-button value="3">
+            超时未叫应
+          </a-radio-button>
+        </a-radio-group>
+      </a-col>
+      <a-col :span="16">
+        <a-row type="flex" justify="end" :gutter="12">
+          <a-col :span="8">
+            <a-range-picker
+                format="YYYY-MM-DD"
+                :placeholder="['开始时间', '结束时间']"
+                @change="onChange"
+                @ok="onOk"
+                style="width: 100%"
+            />
+          </a-col>
+          <a-col :span="4">
+            <a-button type="primary">查询</a-button>
+            <a-button style="margin-left: 12px">重置</a-button>
+          </a-col>
+        </a-row>
+      </a-col>
+    </a-row>
 		<!-- 表格实体部分-->
-		<a-table :columns="columns" :data-source="data" bordered>
-			<template slot="time" slot-scope="text,record">
-				<a v-if="!record.readed" style="color:red">[未读]</a>{{text}}
-			</template>
-			<span slot="level" slot-scope="text">
-				<a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
-					{{ text }}
-				</a-tag>
-			</span>
-			<template slot="attachment" slot-scope="text">
-				<span v-if="text==='无'">无</span>
-				<a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
-			</template >
-			<template slot="receipt" slot-scope="text">
-				<span v-if="text=='待叫应'"
-					style='background-color:blue;padding:5px;color:#fff;border-radius: 5px;'>{{text}}</span>
-				<span v-else-if="text=='已叫应'"
-					style='background-color:limegreen;padding:5px;color:#2a2a2a;border-radius: 5px;'>{{text}}</span>
-				<span v-else style='background-color:red;padding:5px;color:#fff;border-radius: 5px;'>{{text}}
-				</span>
-			</template>
-			<template slot="operation" slot-scope="text, record, index">
-				<div class="editable-row-operations">
-					<div v-if="record.receipt==='待叫应'">
-						<a @click="showModal" style="color:orangered"><a-icon type="notification" />
-							确认已收到</a>&nbsp;&nbsp;
-					</div>
-					<br />
-					<router-link :to="{path:'/torelease'}">转发</router-link>&nbsp;&nbsp;
-					<router-link :to="{path:'/details',query: {id: record.id}}">查看详情</router-link>
-				</div>
-			</template>
-		</a-table>
+    <div class="table-cont">
+      <a-table :columns="columns" :data-source="data" bordered>
+        <template slot="time" slot-scope="text,record">
+          <a v-if="!record.readed" style="color:red">[未读]</a>{{text}}
+        </template>
+        <span slot="level" slot-scope="text">
+          <a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
+            {{ text }}
+          </a-tag>
+        </span>
+        <template slot="attachment" slot-scope="text">
+          <span v-if="text==='无'">无</span>
+          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        </template >
+        <template slot="receipt" slot-scope="text">
+          <span v-if="text=='待叫应'"
+            style='background-color:blue;padding:5px;color:#fff;border-radius: 5px;'>{{text}}</span>
+          <span v-else-if="text=='已叫应'"
+            style='background-color:limegreen;padding:5px;color:#2a2a2a;border-radius: 5px;'>{{text}}</span>
+          <span v-else style='background-color:red;padding:5px;color:#fff;border-radius: 5px;'>{{text}}
+          </span>
+        </template>
+        <template slot="operation" slot-scope="text, record, index">
+          <div class="editable-row-operations">
+            <div v-if="record.receipt==='待叫应'">
+              <a @click="showModal" style="color:orangered"><a-icon type="notification" />
+                确认已收到</a>&nbsp;&nbsp;
+            </div>
+            <br />
+            <router-link :to="{path:'/torelease'}">转发</router-link>&nbsp;&nbsp;
+            <router-link :to="{path:'/details',query: {id: record.id}}">查看详情</router-link>
+          </div>
+        </template>
+      </a-table>
+    </div>
 		<!-- 对话框 -->
 		<a-modal title="回执" 
 		okText="确认已安排部署"
@@ -237,6 +256,9 @@
 			onChange(date, dateString) {
 				console.log(date, dateString);
 			},
+      onOk(value) {
+        console.log('onOk: ', value);
+      },
 			//叫应回执时间
 			showModal() {
 				this.visible = true;

@@ -17,7 +17,7 @@
 			</a-radio-button>
 		</a-radio-group>
 		<div style="float:right">
-			时间区间筛选：<a-range-picker :placeholder="['开始时间', '结束时间']" @change="onChange" />
+			时间区间筛选：<a-range-picker :placeholder="['开始时间', '结束时间']"/>
 		</div>
 		<br /><br />
 		<!-- 表格实体部分-->

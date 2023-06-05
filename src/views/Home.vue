@@ -8,10 +8,10 @@
 			<a-layout>
 				<a-layout-header style="background: #fff; padding: 0">
 					<a-icon class="trigger" :type="collapsed ? 'menu-unfold' : 'menu-fold'"
-						@click="() => (collapsed = !collapsed)" />
+						@click="() => (collapsed = !collapsed)"/>
 					<a-dropdown>
 						<a class="ant-dropdown-link" @click="e => e.preventDefault()">
-							您好，李静 <a-icon type="down" />
+							您好，李静 <a-icon type="down"/>
 						</a>
 						<a-menu slot="overlay">
 							<a-menu-item>
@@ -25,7 +25,6 @@
 							</a-menu-item>
 						</a-menu>
 					</a-dropdown>
-
 				</a-layout-header>
 				<TabsHeader :pageList="pageList" :activePage="activePage" @change="changePage" @close="remove" />
 				<a-layout-content :style="{
@@ -38,9 +37,9 @@
 			</a-layout>
 
 		</a-layout>
-		<center style="textAlign: center;margin-left: 5%;margin-top:50px;">
-			技术支持：中国科学院
-		</center>
+<!--		<center style="textAlign: center;margin-left: 5%;margin-top:50px;">-->
+<!--			技术支持：中国科学院-->
+<!--		</center>-->
 	</div>
 </template>
 

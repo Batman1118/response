@@ -5,6 +5,7 @@ import store from './store'
 import './util/AntDesign'
 import 'ant-design-vue/dist/antd.css'
 import moment from 'moment'
+
 //设置组件默认中文
 import 'moment/locale/zh-cn';
 moment.locale('zh-cn');

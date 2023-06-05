@@ -51,7 +51,7 @@ const menuData = [{
 			{
 				MenuID: "23",
 				MenuTitle: "叫应记录",
-				MenuPath: "/responses",
+				MenuPath: "/callRecord",
 			},
 		],
 	},
@@ -67,7 +67,7 @@ const menuData = [{
 			{
 				MenuID: "32",
 				MenuTitle: "短信记录",
-				MenuPath: "/",
+				MenuPath: "/msgRecord",
 			},
 			{
 				MenuID: "33",
@@ -90,11 +90,11 @@ const menuData = [{
 				MenuTitle: "短信平台设置",
 				MenuPath: "/smssetting",
 			},
-			{
-				MenuID: "43",
-				MenuTitle: "菜单权限",
-				MenuPath: "/munu",
-			},
+			// {
+			// 	MenuID: "43",
+			// 	MenuTitle: "菜单权限",
+			// 	MenuPath: "/menu",
+			// },
 		],
 	},
 ]

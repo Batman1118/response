@@ -16,7 +16,9 @@
 }
 .inner{
 	background-color: #fff;padding: 20px 10px;
-	height: 100vh;
+	height: 88vh;
+  overflow: hidden;
+  overflow-y: scroll;
 }
 .ftright{
 	float:right;

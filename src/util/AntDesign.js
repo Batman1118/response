@@ -17,35 +17,18 @@ import {
   Tooltip,
   Dropdown,
   Select,
+  Switch,
   Radio,
   DatePicker,
   Table,
   Tag,
   Modal,
   TreeSelect,
-  Alert
+  Alert,
+  Cascader,
+  Pagination,
+  FormModel,
+  message
 } from "ant-design-vue";
-Vue.use(Alert);
-Vue.use(TreeSelect);
-Vue.use(Button);
-Vue.use(Layout);
-Vue.use(Menu);
-Vue.use(Icon);
-Vue.use(Form);
-Vue.use(Input);
-Vue.use(Tabs);
-Vue.use(Checkbox);
-Vue.use(Row);
-Vue.use(Col);
-Vue.use(Avatar);
-Vue.use(Divider);
-Vue.use(Card);
-Vue.use(List);
-Vue.use(Tooltip);
-Vue.use(Dropdown);
-Vue.use(Select);
-Vue.use(Radio);
-Vue.use(DatePicker);
-Vue.use(Table);
-Vue.use(Tag);
-Vue.use(Modal);
+Vue.use(Alert).use(Pagination).use(Tag).use(Switch).use(FormModel).use(Modal).use(Cascader).use(TreeSelect).use(Button).use(Layout).use(Menu).use(Icon).use(Form).use(Input).use(Tabs).use(Checkbox).use(Row).use(Col).use(Avatar).use(Divider).use(Card).use(List).use(Tooltip).use(Dropdown).use(Select).use(Radio).use(DatePicker).use(Table);
+Vue.prototype.$message = message;

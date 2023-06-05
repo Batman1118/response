@@ -1,39 +1,59 @@
 <template>
   <div class="inner">
-	  <a-radio-group v-model="category">
-	  	<a-radio-button value="default">
-	  		全部
-	  	</a-radio-button>
-	  	<a-radio-button value="1">
-	  		紧临
-	  	</a-radio-button>
-	  	<a-radio-button value="2">
-	  		常规
-	  	</a-radio-button>
-	  </a-radio-group>
-	  <div style="float:right">
-	  	时间区间筛选：<a-range-picker :placeholder="['开始时间', '结束时间']" @change="onChange" />
-	  </div>
-	  <br/><br/>
+    <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
+      <a-col :span="8">
+        <a-radio-group v-model="category">
+          <a-radio-button value="default">
+            全部
+          </a-radio-button>
+          <a-radio-button value="1">
+            紧临
+          </a-radio-button>
+          <a-radio-button value="2">
+            常规
+          </a-radio-button>
+        </a-radio-group>
+      </a-col>
+      <a-col :span="16">
+        <a-row type="flex" justify="end" :gutter="12">
+          <a-col :span="8">
+            <a-range-picker
+                format="YYYY-MM-DD"
+                :placeholder="['开始时间', '结束时间']"
+                @change="onChange"
+                @ok="onOk"
+                style="width: 100%"
+            />
+          </a-col>
+          <a-col :span="4">
+            <a-button type="primary">查询</a-button>
+            <a-button style="margin-left: 12px">重置</a-button>
+          </a-col>
+        </a-row>
+      </a-col>
+    </a-row>
+
 	  <!-- 表格实体部分-->
-	  <a-table :columns="columns" :data-source="data" bordered>
-		  <span slot="level" slot-scope="text">
-		  	<a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
-		  		{{ text }}
-		  	</a-tag>
-		  </span>
-		  <template slot="attachment" slot-scope="text">
-		  	<span v-if="text==='无'">无</span>
-		  	<a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
-		  </template >
-	  	<template slot="operation" slot-scope="text, record, index">
-	  		<div class="editable-row-operations">
-				<a @click="showModal" style="color:orangered">
-					叫应列表</a>&nbsp;&nbsp;
-	  			<router-link :to="{path:'/details',query: {id: record.id}}">信息详情</router-link>
-	  		</div>
-	  	</template>
-	  </a-table>
+    <div class="table-cont">
+      <a-table :columns="columns" :data-source="data" bordered>
+        <template #level="text">
+          <a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
+            {{ text }}
+          </a-tag>
+        </template>
+        <template #attachment="text">
+          <span v-if="text==='无'">无</span>
+          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        </template >
+        <template #operation="text, record, index">
+          <div class="editable-row-operations">
+          <a @click="showModal" style="color:orangered">
+            叫应列表</a>&nbsp;&nbsp;
+            <router-link :to="{path:'/details',query: {id: record.id}}">信息详情</router-link>
+          </div>
+        </template>
+      </a-table>
+    </div>
 	  <!-- 对话框 -->
 	  <a-modal title="查看叫应详情" 
 	  okText="确认"
@@ -149,10 +169,19 @@
 			}
 		},
 		methods: {
+      onChange(value, dateString) {
+        console.log('Selected Time: ', value);
+        console.log('Formatted Selected Time: ', dateString);
+      },
+      onOk(value) {
+        console.log('onOk: ', value);
+      },
+
 			//弹出层
 			showModal() {
 				this.visible = true;
 			},
+
 			handleOk(e) {
 				this.visible = false;
 			},

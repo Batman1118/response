@@ -32,13 +32,13 @@ const routes = [
 	    path: '/release',
 	    name: 'release',
 	    meta: { title: '我发布的' },
-	    component: () => import('@/views/Admin/Release'),
+	    component: () => import('@/views/Admin/release'),
 	  },
 	  {
 	    path: '/list',
 	    name: 'list',
 	    meta: { title: '我收到的' },
-	    component: () => import('@/views/Admin/List'),
+	    component: () => import('@/views/Admin/list'),
 	  },
 	  {
 	    path: '/details',
@@ -71,23 +71,35 @@ const routes = [
         component: () => import('@/views/Admin/History'),
       },
 	  {
-	    path: '/responses',
-	    name: 'response',
+	    path: '/callRecord',
+	    name: 'callRecord',
 	    meta: { title: '叫应记录' },
-	    component: () => import('@/views/Admin/Response'),
+	    component: () => import('@/views/Admin/callRecord'),
 	  },
+		{
+			path: '/msgRecord',
+			name: 'msgRecord',
+			meta: { title: '短信记录' },
+			component: () => import('@/views/Admin/msgRecord'),
+		},
 	  {
 	    path: '/samelevel',
 	    name: 'samelevel',
-	    meta: { title: '叫应记录' },
-	    component: () => import('@/views/SameLevel'),
+	    meta: { title: '平级接收人管理' },
+	    component: () => import('@/views/Admin/sameLevel'),
 	  },
       {
         path: '/user',
         name: 'user',
-        meta: { title: '管理' },
-        component: () => import('@/views/Admin/UserManage'),
+        meta: { title: '用户管理' },
+        component: () => import('@/views/Admin/userManage'),
       },
+		{
+			path: '/menu',
+			name: 'menu',
+			meta: { title: '菜单管理' },
+			component: () => import('@/views/Admin/menuManage'),
+		},
     ]
   },
 ];
