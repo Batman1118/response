@@ -132,6 +132,7 @@ export default {
           if (res.data.code === 100) {
             Cookies.set('resTk', res.data.data.tk);
             Cookies.set('resUid', res.data.data.uid);
+            this.$router.push('/home')
           } else {
             console.log(res.data.msg)
             this.$message.warning(res.data.msg);
