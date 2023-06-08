@@ -23,8 +23,8 @@
             <a-range-picker
                 format="YYYY-MM-DD"
                 :placeholder="['开始时间', '结束时间']"
-                @change="onChange"
-                @ok="onOk"
+                @change="timeChange"
+                @ok="timeOk"
                 style="width: 100%"
             />
           </a-col>
@@ -38,19 +38,19 @@
 		<!-- 表格实体部分-->
     <div class="table-cont">
       <a-table :columns="columns" :data-source="data" bordered>
-        <template slot="time" slot-scope="text,record">
+        <template #time="text,record">
           <a v-if="!record.readed" style="color:red">[未读]</a>{{text}}
         </template>
-        <span slot="level" slot-scope="text">
+        <template #level="text">
           <a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
             {{ text }}
           </a-tag>
-        </span>
-        <template slot="attachment" slot-scope="text">
+        </template>
+        <template #attachment="text">
           <span v-if="text==='无'">无</span>
           <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
         </template >
-        <template slot="receipt" slot-scope="text">
+        <template #receipt="text">
           <span v-if="text=='待叫应'"
             style='background-color:blue;padding:5px;color:#fff;border-radius: 5px;'>{{text}}</span>
           <span v-else-if="text=='已叫应'"
@@ -58,7 +58,7 @@
           <span v-else style='background-color:red;padding:5px;color:#fff;border-radius: 5px;'>{{text}}
           </span>
         </template>
-        <template slot="operation" slot-scope="text, record, index">
+        <template #operation="text, record, index">
           <div class="editable-row-operations">
             <div v-if="record.receipt==='待叫应'">
               <a @click="showModal" style="color:orangered"><a-icon type="notification" />
@@ -253,11 +253,11 @@
 			popupScroll() {
 				console.log('popupScroll');
 			},
-			onChange(date, dateString) {
+			timeChange(date, dateString) {
 				console.log(date, dateString);
 			},
-      onOk(value) {
-        console.log('onOk: ', value);
+      timeOk(value) {
+        console.log('timeOk: ', value);
       },
 			//叫应回执时间
 			showModal() {

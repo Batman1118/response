@@ -56,8 +56,14 @@ const routes = [
         path: '/torelease',
         name: 'torelease',
         meta: { title: '信息编辑' },
-        component: () => import('@/views/Admin/Notice'),
+        component: () => import('@/views/Admin/notice'),
       },
+		{
+			path: '/msgReview',
+			name: '/msgReview',
+			meta: { title: '信息审核' },
+			component: () => import('@/views/Admin/msgReview'),
+		},
 	  {
 	    path: '/report',
 	    name: 'report',
@@ -77,6 +83,12 @@ const routes = [
 	    component: () => import('@/views/Admin/callRecord'),
 	  },
 		{
+			path: '/massSend',
+			name: 'massSend',
+			meta: { title: '常规群发' },
+			component: () => import('@/views/Admin/massSend'),
+		},
+		{
 			path: '/msgRecord',
 			name: 'msgRecord',
 			meta: { title: '短信记录' },
@@ -95,11 +107,17 @@ const routes = [
         component: () => import('@/views/Admin/userManage'),
       },
 		{
-			path: '/menu',
-			name: 'menu',
-			meta: { title: '菜单管理' },
-			component: () => import('@/views/Admin/menuManage'),
+			path: '/smsSetting',
+			name: 'smsSetting',
+			meta: { title: '短信平台设置' },
+			component: () => import('@/views/Admin/smsSetting'),
 		},
+		// {
+		// 	path: '/menu',
+		// 	name: 'menu',
+		// 	meta: { title: '菜单管理' },
+		// 	component: () => import('@/views/Admin/menuManage'),
+		// },
     ]
   },
 ];

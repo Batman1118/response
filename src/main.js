@@ -8,6 +8,8 @@ import moment from 'moment'
 
 //设置组件默认中文
 import 'moment/locale/zh-cn';
+import '@/util/permission'
+import {message,Modal} from "ant-design-vue";
 moment.locale('zh-cn');
 
 Vue.config.productionTip = false
@@ -22,7 +24,11 @@ Vue.filter('filterTime', (value) => {
     return moment(value).from(moment())
   }
 })
-
+Vue.prototype.$message = message;
+Vue.prototype.$confirm = Modal.confirm;
+message.config({
+  duration: 2
+})
 new Vue({
   router,
   store,

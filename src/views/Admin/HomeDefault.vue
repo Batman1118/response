@@ -6,7 +6,7 @@
         <div class="content-left">
           <img src="./../../assets/user.png" alt="">
           <div class="user">
-            <h2>{{ dateTime + '，李静，欢迎使用自治区自然灾害综合风险预警发布及响应联动系统。' }}</h2>
+            <h2>{{ dateTime}}，{{userName}}，欢迎使用自治区自然灾害综合风险预警发布及响应联动系统</h2>
             <p>自治区预警中心干部  工作人员</p>
           </div>
         </div>
@@ -48,6 +48,7 @@ import Dynamic from '@/components/Home/Dynamic'
 import QuickNavigation from '@/components/Home/QuickNavigation'
 import IndexEcharts from '@/components/Home/IndexEcharts'
 import Team from '@/components/Home/Team'
+import Cookies from "js-cookie";
 
 export default {
   name: 'home-default',
@@ -57,6 +58,14 @@ export default {
     QuickNavigation,
     IndexEcharts,
     Team
+  },
+  data() {
+    return {
+      userName: ''
+    };
+  },
+  created() {
+    this.userName = JSON.parse(Cookies.get('userInfo')).realName
   },
   computed: {
     dateTime () {

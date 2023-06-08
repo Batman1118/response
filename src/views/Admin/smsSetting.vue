@@ -1,5 +1,6 @@
 <template>
-  <div class="module-one">
+  <div class="inner">
+    短信平台设置
   </div>
 </template>
 

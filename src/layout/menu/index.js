@@ -39,17 +39,22 @@ const menuData = [{
 				MenuPath: "/torelease",
 			},
 			{
-				MenuID: "24",
+				MenuID: "22",
+				MenuTitle: "信息审核",
+				MenuPath: "/msgReview",
+			},
+			{
+				MenuID: "23",
 				MenuTitle: "信息发布",
 				MenuPath: "/report",
 			},
 			{
-				MenuID: "22",
+				MenuID: "24",
 				MenuTitle: "历史信息",
 				MenuPath: "/history",
 			},
 			{
-				MenuID: "23",
+				MenuID: "25",
 				MenuTitle: "叫应记录",
 				MenuPath: "/callRecord",
 			},
@@ -62,7 +67,7 @@ const menuData = [{
 		Children: [{
 				MenuID: "31",
 				MenuTitle: "常规群发",
-				MenuPath: "/module",
+				MenuPath: "/massSend",
 			},
 			{
 				MenuID: "32",
@@ -88,7 +93,7 @@ const menuData = [{
 			{
 				MenuID: "42",
 				MenuTitle: "短信平台设置",
-				MenuPath: "/smssetting",
+				MenuPath: "/smsSetting",
 			},
 			// {
 			// 	MenuID: "43",

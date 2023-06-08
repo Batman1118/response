@@ -10,7 +10,7 @@
             <a-cascader :options="areaData" v-model="areaVal" placeholder="行政规划" expandTrigger="hover" changeOnSelect @change="onChange" style="width: 100%"/>
           </a-col>
           <a-col :span="4">
-            <a-button type="primary" @click="getUserList">查询</a-button>
+            <a-button type="primary">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
@@ -18,15 +18,18 @@
     </a-row>
     <div class="table-cont">
       <a-table :columns="columns" :data-source="tableData" :pagination="pagination" :rowKey="record=>record.name" bordered>
-        <template #levels="level">
+        <template #unittype="unittype">
           <a-tag
-            :color="level === 1 ? 'pink' : level === 2 ? 'blue' : 'green'"
+              :color="unittype === 1 ? 'purple' : unittype === 2 ? 'blue' : unittype === 3 ? 'cyan' : 'green'"
           >
-            {{ level === 1 ? '省级' : level === 2 ? '地（市、州）级' : level === 3 ? '区县级' : '村（乡、镇）级' }}
+            {{ unittype==1?'省级':unittype==2?'地（市、州）级':unittype==3?'区县级':'村（乡、镇）级' }}
           </a-tag>
         </template>
-        <template #area="area">
-          {{findAreaById(areaData,area)}}
+        <template #area="text,row">
+          <span v-if="row.province !== null && row.province !== ''">{{row.province}}</span>
+          <span v-if="row.city !== null && row.city !== ''">-{{row.city}}</span>
+          <span v-if="row.area !== null && row.area !== ''">-{{row.area}}</span>
+          <span v-if="row.town !== null && row.town !== ''">-{{row.town}}</span>
         </template>
         <template #action="action,row">
           <a-button type="link" @click="editData('edit',row)">编辑</a-button>
@@ -34,12 +37,12 @@
         </template>
       </a-table>
     </div>
-    <same-level-mod ref="sameLevelMod" @refrech="getUserList"></same-level-mod>
+    <same-level-mod ref="sameLevelMod" @refrech=""></same-level-mod>
   </div>
 </template>
 
 <script>
-import {getUser} from '@/api/user'
+import {getRecipient} from '@/api/user'
 import sameLevelMod from "@/views/Admin/components/sameLevelMod"
 export default {
   name: 'sameLevel',
@@ -53,19 +56,22 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
-          districtId: null
+          province: '',
+          city: '',
+          area: '',
+          town: ''
         }
       },
       columns:[
         {
           title: '单位名称',
-          dataIndex: 'depName',
-          key: 'depName'
+          dataIndex: 'company',
+          key: 'company'
         },
         {
           title: '接收人姓名',
-          dataIndex: 'name',
-          key: 'name'
+          dataIndex: 'recipientName',
+          key: 'recipientName'
         },
         {
           title: '手机号码',
@@ -74,14 +80,14 @@ export default {
         },
         {
           title: '级别',
-          dataIndex: 'level',
-          key: 'level',
-          scopedSlots: { customRender: 'levels' }
+          dataIndex: 'unittype',
+          // key: 'unittype',
+          scopedSlots: { customRender: 'unittype' }
         },
         {
           title: '行政区划',
           dataIndex: 'area',
-          key: 'area',
+          // key: 'area',
           scopedSlots: { customRender: 'area' }
         },
         {
@@ -90,34 +96,12 @@ export default {
           scopedSlots: { customRender: 'action' }
         },
       ],
-      tableData: [
-        {
-          depName: '阿勒泰地区自然资源局',
-          name: 'John Brown',
-          phone: '15261806177',
-          level: 1,
-          area: 111
-        },
-        {
-          depName: '阿勒泰地区公安局',
-          name: 'Jim Green',
-          phone: '15261806178',
-          level: 2,
-          area: 211
-        },
-        {
-          depName: '阿勒泰地区自然资源局',
-          name: 'Joe Black',
-          phone: '15261806176',
-          level: 3,
-          area: 11
-        },
-      ],
+      tableData: [],
       pagination: {
         current: 1,
         defaultCurrent: 1,
         defaultPageSize: 10,
-        total: 11,
+        total: 0,
         onChange: ( page, pageSize ) => this.onPageChange(page,pageSize)
       },
       areaData: [
@@ -158,12 +142,18 @@ export default {
   },
   created() {
     const t = this
-    t.getUserList()
+    t.getSameLevel()
   },
   methods:{
-    async getUserList(){
+    async getSameLevel(){
       const t = this
-      const res = await getUser(t.search)
+      const res = await getRecipient(t.search)
+      if(res.data.code == 100){
+        t.tableData = res.data.data
+        t.pagination.total = res.data.total
+      }else{
+        t.$message.warning(res.data.msg);
+      }
     },
 
     resetSearch(){
@@ -173,7 +163,10 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
-          districtId: null
+          province: '',
+          city: '',
+          area: '',
+          town: ''
         }
       }
       t.getUserList()
@@ -191,7 +184,7 @@ export default {
     },
     onChange(value) {
       const t = this
-      t.search.searchParams.districtId = value[value.length - 1]
+      // t.search.searchParams.districtId = value[value.length - 1]
     },
 
     findAreaById(data,value) {

@@ -2,6 +2,7 @@
   <a-modal
       :title="title"
       :visible="visible"
+      centered
       :confirm-loading="confirmLoading"
       width="50%"
       cancelText="取消"
@@ -111,7 +112,6 @@ export default {
           alert('submit!');
           this.visible = false
         } else {
-          console.log('error submit!!');
           return false;
         }
       });

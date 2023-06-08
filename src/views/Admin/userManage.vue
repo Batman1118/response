@@ -38,38 +38,42 @@
     <div class="table-cont">
       <a-table :columns="columns" :data-source="tableData" :pagination="pagination" :rowKey="record=>record.id" bordered>
         <template #sex="sex">
-          {{ sex == 0?'男':'女' }}
+          {{ sex == 1?'男':'女'}}
         </template>
-        <template #level="level">
+        <template #unittype="unittype">
           <a-tag
-              :key="level"
-              :color="level === 1 ? 'pink' : level === 2 ? 'blue' : 'green'"
+              :color="unittype === 1 ? 'purple' : unittype === 2 ? 'blue' : unittype === 3 ? 'cyan' : 'green'"
           >
-            {{ level==1?'省级':level==2?'地（市、州）级':level==3?'区县级':'村（乡、镇）级' }}
+            {{ unittype==1?'省级':unittype==2?'地（市、州）级':unittype==3?'区县级':'村（乡、镇）级' }}
           </a-tag>
         </template>
-        <template #area="area">
-          {{findAreaById(areaData,area)}}
+        <template #area="text,row">
+          <span v-if="row.province !== null && row.province !== ''">{{row.province}}</span>
+          <span v-if="row.city !== null && row.city !== ''">-{{row.city}}</span>
+          <span v-if="row.area !== null && row.area !== ''">-{{row.area}}</span>
+          <span v-if="row.town !== null && row.town !== ''">-{{row.town}}</span>
         </template>
         <template #role="role">
-          {{ role == 1?'领导':'工作人员'}}
+          {{ role.roleName}}
         </template>
         <template #action="action,row">
           <a-button type="link" @click="editData('edit',row)">编辑</a-button>
-          <a-button type="link" class="delBtn">删除</a-button>
+          <a-button type="link" class="delBtn" @click="delData(row)">删除</a-button>
           <a-button type="link" @click="editPwd(row)">重置密码</a-button>
         </template>
       </a-table>
     </div>
-    <user-mod ref="userMod" @refrech="getUserList"></user-mod>
-    <pwd-mod ref="pwdMod" @refrech="getUserList"></pwd-mod>
+    <user-mod ref="userMod" @refresh="getUserList"></user-mod>
+    <pwd-mod ref="pwdMod" @refresh="getUserList"></pwd-mod>
   </div>
 </template>
 
 <script>
-import {getUser} from '@/api/user'
+import {getUser,delUser} from '@/api/user'
 import userMod from "@/views/Admin/components/userMod"
 import pwdMod from "@/views/Admin/components/pwdMod";
+import {loginOut} from "@/api/login";
+import {Session} from "@/util/storage";
 export default {
   name: 'user',
   components: {
@@ -85,7 +89,7 @@ export default {
         searchParams:{
           realName: '',
           districtId: null,
-          unittype: undefined
+          unittype: null
         }
       },
       columns:[
@@ -96,8 +100,8 @@ export default {
         },
         {
           title: '姓名',
-          dataIndex: 'name',
-          key: 'name'
+          dataIndex: 'realName',
+          key: 'realName'
         },
         {
           title: '手机号码',
@@ -106,8 +110,8 @@ export default {
         },
         {
           title: '用户名',
-          dataIndex: 'userName',
-          key: 'userName'
+          dataIndex: 'name',
+          key: 'name'
         },
         {
           title: '性别',
@@ -117,14 +121,14 @@ export default {
         },
         {
           title: '级别',
-          dataIndex: 'level',
-          key: 'level',
-          scopedSlots: { customRender: 'level' }
+          dataIndex: 'unittype',
+          // key: 'unittype',
+          scopedSlots: { customRender: 'unittype' }
         },
         {
           title: '行政区划',
           dataIndex: 'area',
-          key: 'area',
+          // key: 'area',
           scopedSlots: { customRender: 'area' }
         },
         {
@@ -139,43 +143,12 @@ export default {
           scopedSlots: { customRender: 'action' },
         },
       ],
-      tableData: [
-        {
-          id: 1,
-          name: 'John Brown',
-          phone: '15261806177',
-          userName: 'JBrown',
-          sex: 0,
-          level: 1,
-          area: 111,
-          role: 1
-        },
-        {
-          id: 2,
-          name: 'Jim Green',
-          phone: '15261806178',
-          userName: 'JGreen',
-          sex: 1,
-          level: 2,
-          area: 211,
-          role: 2
-        },
-        {
-          id: 3,
-          name: 'Joe Black',
-          phone: '15261806176',
-          userName: 'JBlack',
-          sex: 0,
-          level: 3,
-          area: 11,
-          role: 1
-        },
-      ],
+      tableData: [],
       pagination: {
         current: 1,
         defaultCurrent: 1,
         defaultPageSize: 10,
-        total: 11,
+        total: 0,
         onChange: ( page, pageSize ) => this.onPageChange(page,pageSize)
       },
       areaData: [
@@ -222,6 +195,35 @@ export default {
     async getUserList(){
       const t = this
       const res = await getUser(t.search)
+      if(res.data.code == 100){
+        t.tableData = res.data.data
+        t.pagination.total = res.data.total
+      }else{
+        t.$message.warning(res.data.msg);
+      }
+    },
+
+    async delData(row){
+      const t = this
+      this.$confirm({
+        title: '提示',
+        content: h => <div>是否删除该条用户信息？</div>,
+        cancelText: '取消',
+        okText: '确认',
+        centered: true,
+        async onOk() {
+          let res = await delUser(row.id)
+          if(res.data.code == 100){
+            t.$message.success('删除用户信息成功');
+            t.getUserList()
+          }else{
+            t.$message.warning(res.data.msg);
+          }
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
     },
 
     resetSearch(){
@@ -233,7 +235,7 @@ export default {
         searchParams:{
           realName: '',
           districtId: null,
-          unittype: undefined
+          unittype: null
         }
       }
       t.getUserList()
@@ -247,7 +249,8 @@ export default {
 
     editPwd(record){
       const t = this
-      t.$refs.pwdMod.form.id = record.id
+      t.$refs.pwdMod.form.uid = record.id
+      t.$refs.pwdMod.updateType = 2
       t.$refs.pwdMod.visible = true
     },
 

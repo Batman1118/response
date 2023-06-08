@@ -18,6 +18,7 @@
             placeholder="请输入用户"
             size="large"
             v-model="form.name"
+            autocomplete="new-password"
         >
           <a-icon slot="prefix" type="user" style="color:rgba(0,0,0,.25)" />
         </a-input>
@@ -28,6 +29,7 @@
             placeholder="请输入密码"
             size="large"
             v-model="form.pwd"
+            autocomplete="new-password"
         >
           <a-icon slot="prefix" type="lock" style="color:rgba(0,0,0,.25)" />
         </a-input-password>
@@ -78,8 +80,8 @@
 <!--        </a-tab-pane>-->
 <!--      </a-tabs>-->
       <div style="margin-bottom: 20px">
-        <a-checkbox :checked="true" style="color:#fff;">自动登录</a-checkbox>
-        <a style="float: right">忘记密码</a>
+        <a-checkbox :checked="isAuto" style="color:#fff;">自动登录</a-checkbox>
+<!--        <a style="float: right">忘记密码</a>-->
       </div>
       <a-form-item style="text-align: center">
         <a-button
@@ -88,6 +90,7 @@
           style="width: 100%"
           size="large"
           @click="handleSubmit"
+          :loading="isLoading"
         >
           登录
         </a-button>
@@ -100,12 +103,14 @@
 
 <script>
 
-import { Login, getMenuAdmin } from "@/api/login";
+import { login, getMenuAdmin } from "@/api/login";
 import Cookies from 'js-cookie';
 export default {
   name: "login",
   data() {
     return {
+      isLoading: false,
+      isAuto: false,
       // hasErrors,
       // form: this.$form.createForm(this),
       form: {
@@ -119,7 +124,7 @@ export default {
       menu: []
     };
   },
-  mounted() {
+  created() {
     // this.$nextTick(() => {
     //   this.form.validateFields();
     // });
@@ -128,15 +133,17 @@ export default {
     handleSubmit() {
       this.$refs.ruleForm.validate(async (valid) => {
         if (valid) {
-          const res = await Login(this.form)
+          this.isLoading = true
+          const res = await login(this.form)
           if (res.data.code === 100) {
             Cookies.set('resTk', res.data.data.tk);
             Cookies.set('resUid', res.data.data.uid);
+            Cookies.set('userInfo',JSON.stringify(res.data.data),{expires: 7})
             this.$router.push('/home')
           } else {
-            console.log(res.data.msg)
             this.$message.warning(res.data.msg);
           }
+          this.isLoading = false
         } else {
           console.log('error submit!!');
           return false;
@@ -170,7 +177,7 @@ h2{
 }
   .hedaer {
     margin: 0px auto;
-	padding-top:100px;
+	padding-top:200px;
     width: 1000px;
     text-align: center;
 	text-shadow:0 0 1px #000;

@@ -2,6 +2,7 @@
   <a-modal
       :title="title"
       :visible="visible"
+      centered
       :confirm-loading="confirmLoading"
       width="50%"
       cancelText="取消"
@@ -11,29 +12,29 @@
       :afterClose="clearMod"
   >
     <a-form-model ref="ruleForm" :rules="rules" :model="form" :label-col="labelCol" :wrapper-col="wrapperCol" :colon="false">
-      <a-form-model-item label="姓名" prop="name">
-        <a-input v-model="form.name"/>
+      <a-form-model-item label="姓名" prop="realName">
+        <a-input v-model="form.realName"/>
       </a-form-model-item>
       <a-form-model-item label="手机号码" prop="phone">
         <a-input v-model="form.phone"/>
       </a-form-model-item>
-      <a-form-model-item label="用户名" prop="userName">
-        <a-input v-model="form.userName"/>
+      <a-form-model-item label="用户名" prop="name">
+        <a-input v-model="form.name"/>
       </a-form-model-item>
-      <a-form-model-item label="密码" v-if="title== '新增用户'" prop="password">
-        <a-input v-model="form.password"/>
+      <a-form-model-item label="密码" v-if="title== '新增用户'" prop="pwd">
+        <a-input v-model="form.pwd"/>
       </a-form-model-item>
-      <a-form-model-item label="重复密码" v-if="title== '新增用户'" prop="rePassword">
-        <a-input v-model="form.rePassword"/>
+      <a-form-model-item label="重复密码" v-if="title== '新增用户'" prop="dupPwd">
+        <a-input v-model="form.dupPwd"/>
       </a-form-model-item>
       <a-form-model-item label="性别" prop="sex">
-        <a-radio-group v-model="form.sex" :default-value="0" button-style="solid">
-          <a-radio-button :value="0">男</a-radio-button>
-          <a-radio-button :value="1">女</a-radio-button>
+        <a-radio-group v-model="form.sex" :default-value="1" button-style="solid">
+          <a-radio-button :value="1">男</a-radio-button>
+          <a-radio-button :value="0">女</a-radio-button>
         </a-radio-group>
       </a-form-model-item>
-      <a-form-model-item label="选择级别" prop="level">
-        <a-select v-model="form.level" placeholder="监管级别">
+      <a-form-model-item label="选择级别" prop="unittype">
+        <a-select v-model="form.unittype" placeholder="监管级别">
           <a-select-option :value="1">
             省级
           </a-select-option>
@@ -63,12 +64,12 @@
         <a-input v-model="unitName"/>
       </a-form-model-item>
       <a-form-model-item label="角色" prop="role">
-        <a-select v-model="form.role" placeholder="角色">
-          <a-select-option :value="1">
+        <a-select v-model="form.roleId" placeholder="角色">
+          <a-select-option :value="2">
             领导
           </a-select-option>
-          <a-select-option :value="2">
-            公司人员
+          <a-select-option :value="3">
+            工作人员
           </a-select-option>
         </a-select>
       </a-form-model-item>
@@ -90,26 +91,26 @@ export default {
       areaData: [],
       unitName: '',
       form: {
-        name: '',
+        realName: '',
         phone: '',
-        userName: '',
-        password: '',
-        rePassword: '',
+        name: '',
+        pwd: '',
+        dupPwd: '',
         sex: null,
-        level: null,
+        unittype: null,
         area: null,
-        role: null
+        roleId: null
       },
       rules: {
-        name: [{ required: true, message: '请输入姓名', trigger: 'blur'}],
+        realName: [{ required: true, message: '请输入姓名', trigger: 'blur'}],
         phone: [{ required: true, message: '请输入手机号', trigger: 'blur'}],
-        userName: [{ required: true, message: '请输入用户名', trigger: 'blur'}],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur'}],
-        rePassword: [{ required: true, message: '请再次输入密码', trigger: 'blur'}],
+        name: [{ required: true, message: '请输入用户名', trigger: 'blur'}],
+        pwd: [{ required: true, message: '请输入密码', trigger: 'blur'}],
+        dupPwd: [{ required: true, message: '请再次输入密码', trigger: 'blur'}],
         sex: [{ required: true, message: '请选择性别', trigger: 'change'}],
-        level: [{ required: true, message: '请选择监管级别', trigger: 'change'}],
+        unittype: [{ required: true, message: '请选择监管级别', trigger: 'change'}],
         area: [{ required: true, message: '请选择行政区划', trigger: 'change'}],
-        role: [{ required: true, message: '请选择角色', trigger: 'change'}]
+        roleId: [{ required: true, message: '请选择角色', trigger: 'change'}]
       }
     }
   },
@@ -122,19 +123,21 @@ export default {
       if(type == 'add'){
         t.title = '新增用户'
         t.form = {
-          name: '',
+          realName: '',
           phone: '',
-          userName: '',
-          password: '',
-          rePassword: '',
+          name: '',
+          pwd: '',
+          dupPwd: '',
           sex: undefined,
-          level: undefined,
+          unittype: undefined,
           area: undefined,
-          role: undefined
+          roleId: null
         }
       }else{
         t.title = '编辑用户'
-        t.form = data
+        data.roleId = data.role.roleId
+        const { realName,phone,name,sex,unittype,roleId } = data
+        t.form = { realName,phone,name,sex,unittype,roleId }
       }
       t.visible = true
     },
@@ -146,8 +149,12 @@ export default {
     onSubmit() {
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
-          alert('submit!');
-          this.visible = false
+          if(this.title == '新增用户')
+             addUser(this.form).then((res)=>{
+               if(res.data.code == 100){
+                 console.log(res,'res')
+               }
+             })
         } else {
           console.log('error submit!!');
           return false;

@@ -46,11 +46,13 @@
 			<span><b>发布单位：</b>{{department}}</span>
 			<br/><br/>
 			<!-- 子单位-->
-			<b>选择接收单位：</b>
+			<div style="margin-bottom: 10px">选择接收单位：</div>
 			<a-tree-select
 			    show-search
+          tree-checkable
+          treeCheckStrictly
 			    style="width: 100%"
-			    :value="svalue"
+          v-model="svalue"
 			    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
 			    placeholder="选择工作通知接收单位"
 			    allow-clear
@@ -60,6 +62,8 @@
 			    @search="onSearch"
 			    @select="onSelect"
 			  >
+        <a-tree-select-node key="0" value="all" title="全选">
+        </a-tree-select-node>
 			    <a-tree-select-node key="0-1" value="乌鲁木齐" title="乌鲁木齐(张XX 13268813610)">
 			      <a-tree-select-node key="0-1-1" value="米东区" title="米东区(张XX 13268813610)">
 			        <a-tree-select-node key="0-1-1-1" value="XX村1" title="XX村(李有田 13268813610)" />
@@ -130,15 +134,19 @@
 		methods: {
 			//选择子部门部分
 			onChanges(value) {
-			      console.log(value);
-			      this.svalue = value;
+            if(value.find(i=>i.value == 'all')){
+              console.log('全选了')
+            }else{
+              this.svalue = value;
+            }
+            console.log(this.svalue);
 			    },
-			    onSearch() {
-			      console.log(...arguments);
-			    },
-			    onSelect() {
-			      console.log(...arguments);
-			    },
+      onSearch() {
+        console.log(...arguments);
+      },
+      onSelect() {
+        console.log(...arguments);
+      },
 			//选择平级部门部分
 			handle(selectedItems) {
 				this.selectedItems = selectedItems;

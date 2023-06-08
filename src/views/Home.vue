@@ -11,14 +11,14 @@
 						@click="() => (collapsed = !collapsed)"/>
 					<a-dropdown>
 						<a class="ant-dropdown-link" @click="e => e.preventDefault()">
-							您好，李静 <a-icon type="down"/>
+							您好，{{userInfo.realName}} <a-icon type="down"/>
 						</a>
 						<a-menu slot="overlay">
 							<a-menu-item>
-								<a href="javascript:;">修改密码</a>
+								<a href="javascript:;" @click="editPwd">修改密码</a>
 							</a-menu-item>
 							<a-menu-item>
-								<a href="javascript:;">回到首页</a>
+								<a href="javascript:;" @click="backHome">回到首页</a>
 							</a-menu-item>
 							<a-menu-item>
 								<a @click="logout">退出登录</a>
@@ -32,11 +32,14 @@
         }">
 					<!-- Content -->
 					<router-view ref="tabContent"></router-view>
-					<div style="height: 30px"></div>
+					<div style="height: 30px;text-align: center;line-height: 30px">
+            技术支持：中国科学院
+          </div>
 				</a-layout-content>
 			</a-layout>
 
 		</a-layout>
+    <pwd-mod ref="pwdMod"></pwd-mod>
 <!--		<center style="textAlign: center;margin-left: 5%;margin-top:50px;">-->
 <!--			技术支持：中国科学院-->
 <!--		</center>-->
@@ -46,10 +49,15 @@
 <script>
 	import menuSider from "@/layout/menuSider";
 	import TabsHeader from '@/components/TabsHeader';
+  import pwdMod from "@/views/Admin/components/pwdMod";
+  import { loginOut } from "@/api/login";
+  import { Session } from '@/util/storage';
+  import Cookies from 'js-cookie';
 	export default {
 		name: "Home",
 		data() {
 			return {
+        userInfo: {},
 				collapsed: false, //返回logo图片或表述
 				pageList: [],
 				activePage: '',
@@ -59,8 +67,10 @@
 		components: {
 			menuSider,
 			TabsHeader,
+      pwdMod
 		},
 		created() {
+      this.userInfo = JSON.parse(Cookies.get('userInfo'))
 			const route = this.$route
 			if (this.pageList.findIndex(item => item.path === route.path) === -1) {
 				this.pageList.push(this.createPage(route))
@@ -92,8 +102,41 @@
 			}
 		},
 		methods: {
+      backHome(){
+        this.$router.push('/home')
+      },
+
+      editPwd(){
+        const t = this
+        t.$refs.pwdMod.updateType = 1
+        t.$refs.pwdMod.form.uid = t.userInfo.uid
+        t.$refs.pwdMod.visible = true
+      },
+
 			logout(){
-				this.$router.push('/')
+        const t = this
+        this.$confirm({
+          title: '提示',
+          content: h => <div>该操作将登出，是否继续？</div>,
+          cancelText: '取消',
+          okText: '确认',
+          centered: true,
+          async onOk() {
+            const res = await loginOut()
+            if (res.data.code === 100) {
+              Session.clear(); // 清除缓存/token等
+              // 使用 reload 时，不需要调用 resetRoute() 重置路由
+              t.$router.push('/')
+              // window.location.reload();
+            } else {
+              this.$message.warning(res.data.msg);
+            }
+          },
+          onCancel() {
+            console.log('Cancel');
+          },
+          class: 'test',
+        });
 			},
 			changePage(key) {
 				this.activePage = key
