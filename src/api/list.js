@@ -53,7 +53,14 @@ export function getResponseRecord(data){
     })
 }
 
-
+// 根据id获取叫应信息
+export function getResponseById(data){
+    return request({
+        url: '/published/warninfo/responses/page',
+        method: 'post',
+        data: data
+    })
+}
 
 
 

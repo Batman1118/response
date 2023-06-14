@@ -63,23 +63,19 @@
           </a-tag>
         </template>
         <template #operation="text, record, index">
-          <a-button type="primary">叫应列表</a-button>
+          <a-button type="primary" @click="openList(record.id)">叫应列表</a-button>
           <a-button type="link" @click="openMod('view',record)">查看详情</a-button>
         </template>
       </a-table>
       <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+      <call-list-mod ref="callList" @refresh="getData"></call-list-mod>
     </div>
-    <!-- 对话框 -->
-    <a-modal title="查看叫应详情"
-             okText="确认"
-             cancelText="关闭"
-             :visible="visible" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleOk">
-    </a-modal>
   </div>
 </template>
 <script>
 import {getHistoryRecord, getMsgRecord, getPublishRecord} from "@/api/list";
 import msgEditMod from "@/views/Admin/components/msgEditMod";
+import callListMod from "@/views/Admin/components/callListMod";
 import {getReviewDetailByWorker} from "@/api/review";
 const columns = [{
   title: '序号',
@@ -149,7 +145,7 @@ const columns = [{
 ];
 export default {
   name: 'release',
-  components: { msgEditMod },
+  components: { msgEditMod, callListMod },
   data() {
     return {
       search:{
@@ -205,6 +201,11 @@ export default {
       }else{
         this.$message.error(res.data.msg)
       }
+    },
+
+    openList(id){
+      const t = this
+      t.$refs.callList.openMod(id)
     },
 
     openMod(type,data){
