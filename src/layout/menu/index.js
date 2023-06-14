@@ -36,7 +36,7 @@ const menuData = [{
 		Children: [{
 				MenuID: "21",
 				MenuTitle: "信息编辑",
-				MenuPath: "/torelease",
+				MenuPath: "/notice",
 			},
 			{
 				MenuID: "22",

@@ -35,8 +35,13 @@ http.interceptors.request.use(config=>{
 http.interceptors.response.use(
     (response) => {
         // 对响应数据做点什么
-        if (response.data.code && response.data.code === 'A0213') {
-            message.error('用户uid不存在');
+        if (response.data.code && response.data.code === 401) {
+            message.error('用户不存在');
+            loginOut()
+                .then(() => {
+                    Session.clear();
+                    window.location.href = '/';
+                });
             // useLoginApi()
             //     .signOut()
             //     .then(() => {

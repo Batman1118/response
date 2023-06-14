@@ -50,9 +50,9 @@
 	import menuSider from "@/layout/menuSider";
 	import TabsHeader from '@/components/TabsHeader';
   import pwdMod from "@/views/Admin/components/pwdMod";
-  import { loginOut } from "@/api/login";
-  import { Session } from '@/util/storage';
-  import Cookies from 'js-cookie';
+  import { loginOut, getDistrictInfo } from "@/api/login";
+  import { Session, getUserInfo} from '@/util/storage';
+  import Cookies from "js-cookie";
 	export default {
 		name: "Home",
 		data() {
@@ -70,7 +70,8 @@
       pwdMod
 		},
 		created() {
-      this.userInfo = JSON.parse(Cookies.get('userInfo'))
+      this.userInfo = getUserInfo()
+      // this.getDistrictInfo()
 			const route = this.$route
 			if (this.pageList.findIndex(item => item.path === route.path) === -1) {
 				this.pageList.push(this.createPage(route))
@@ -138,6 +139,18 @@
           class: 'test',
         });
 			},
+
+      // async getDistrictInfo(){
+      //   let res = await getDistrictInfo()
+      //   if(res.data.code == 100){
+      //     console.log(res.data.data)
+      //     Cookies.set('district', res.data.data);
+      //     console.log(Cookies.get('district'),666)
+      //   } else {
+      //     this.$message.warning(res.data.msg);
+      //   }
+      // },
+
 			changePage(key) {
 				this.activePage = key
 				const page = this.pageList.find(item => item.path === key)

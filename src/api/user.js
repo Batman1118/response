@@ -18,6 +18,14 @@ export function addUser(data){
     })
 }
 
+export function updateUser(data){
+    return request({
+        url: '/account/user/update/info',
+        method: 'post',
+        data: data,
+    })
+}
+
 export function delUser(id){
     return request({
         url: '/account/user/deleteUser?userId=' + id,
@@ -42,28 +50,57 @@ export function getRecipient(data){
     })
 }
 
-export function getRecipientById(data){
+export function getRecipientById(id){
     return request({
-        url:'/mesmanager/recipient/findById',
-        method:'post',
-        data:data,
+        url:'/mesmanager/recipient/findById?id=' + id,
+        method:'get'
+    })
+}
+
+export function getPeerRecipient(){
+    return request({
+        url:'/mesmanager/recipient/listPeerRecipient',
+        method:'get'
+    })
+}
+
+export function getAreaWithUserIfo(){
+    return request({
+        url:'/sys/districtInfo/allWithUserIfo',
+        method:'get'
     })
 }
 
 export function addRecipient(data){
     return request({
-        url:'/mesmanager/recipient/page',
+        url:'/mesmanager/recipient/add',
         method:'post',
         data:data,
     })
 }
 
+export function updateRecipient(data){
+    return request({
+        url:'/mesmanager/recipient/update',
+        method:'post',
+        data:data,
+    })
+}
 
+export function delRecipient(id){
+    return request({
+        url:'/mesmanager/recipient/delete?id=' + id,
+        method: 'get'
+    })
+}
 
-
-
-
-
+// 获取同级领导
+export function getLeaders(){
+    return request({
+        url: '/account/user/list/auditors',
+        method: 'get'
+    })
+}
 
 
 

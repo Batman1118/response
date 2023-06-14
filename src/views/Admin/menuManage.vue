@@ -38,8 +38,8 @@
         </template>
       </a-table>
     </div>
-    <user-mod ref="userMod" @refrech="getUserList"></user-mod>
-    <pwd-mod ref="pwdMod" @refrech="getUserList"></pwd-mod>
+    <user-mod ref="userMod" @refresh="getUserList"></user-mod>
+    <pwd-mod ref="pwdMod" @refresh="getUserList"></pwd-mod>
   </div>
 </template>
 

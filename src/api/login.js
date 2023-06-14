@@ -22,3 +22,11 @@ export function getMenuAdmin(){
         method:'get',
     })
 }
+
+// 获取区划列表
+export function getDistrictInfo(){
+    return request({
+        url:'/sys/districtInfo/all',
+        method:'get',
+    })
+}

@@ -7,6 +7,13 @@ import Cookies from 'js-cookie';
  * @method remove 移除永久缓存
  * @method clear 移除全部永久缓存
  */
+export function getUserInfo() {
+	const userInfo = Cookies.get('userInfo')
+	if(userInfo){
+		return JSON.parse(userInfo)
+	}
+}
+
 export const Local = {
 	// 设置永久缓存
 	set(key, val) {

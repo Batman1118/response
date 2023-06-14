@@ -2,14 +2,14 @@
   <div class="inner">
     <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
       <a-col :span="8">
-        <a-radio-group v-model="category">
-          <a-radio-button value="default">
+        <a-radio-group v-model="search.searchParams.emergType" @change="getData">
+          <a-radio-button :value="null">
             全部
           </a-radio-button>
-          <a-radio-button value="1">
+          <a-radio-button :value="1">
             紧临
           </a-radio-button>
-          <a-radio-button value="2">
+          <a-radio-button :value="2">
             常规
           </a-radio-button>
         </a-radio-group>
@@ -18,16 +18,17 @@
         <a-row type="flex" justify="end" :gutter="12">
           <a-col :span="8">
             <a-range-picker
+                v-model="timeRange"
                 format="YYYY-MM-DD"
                 :placeholder="['开始时间', '结束时间']"
-                @change="onChange"
-                @ok="onOk"
+                @change="timeChange"
+                @ok="timeOk"
                 style="width: 100%"
             />
           </a-col>
           <a-col :span="4">
-            <a-button type="primary">查询</a-button>
-            <a-button style="margin-left: 12px">重置</a-button>
+            <a-button type="primary" @click="getData">查询</a-button>
+            <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
       </a-col>
@@ -35,24 +36,38 @@
 
 	  <!-- 表格实体部分-->
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="data" bordered>
-        <template #level="text">
-          <a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
-            {{ text }}
+      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination">
+        <template #index="text,record,index">
+          {{ index + 1 }}
+        </template>
+        <template #publishingTime="text">
+          {{ text }}
+        </template>
+        <template #publishingUnit="text">
+          {{ text }}
+        </template>
+        <template #disasterType="text">
+          {{ getRiskName(text) }}
+        </template>
+        <template #warningLevel="text">
+          <a-tag :color="text === 3 ? 'yellow' :text === 2? 'orange':text === 1?'red':'blue'">
+            {{ getLevelName(text) }}
           </a-tag>
         </template>
         <template #attachment="text">
-          <span v-if="text==='无'">无</span>
-          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+          <a><b><a-icon type="paper-clip"/></b></a>
         </template >
+        <template #responseSituation="text">
+          <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
+            {{text == 1 ? '待叫应' : text == 2 ?'已叫应':text == 3 ?'超时未叫应' : ''}}
+          </a-tag>
+        </template>
         <template #operation="text, record, index">
-          <div class="editable-row-operations">
-          <a @click="showModal" style="color:orangered">
-            叫应列表</a>&nbsp;&nbsp;
-            <router-link :to="{path:'/details',query: {id: record.id}}">信息详情</router-link>
-          </div>
+          <a-button type="primary">叫应列表</a-button>
+          <a-button type="link" @click="openMod('view',record)">查看详情</a-button>
         </template>
       </a-table>
+      <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
     </div>
 	  <!-- 对话框 -->
 	  <a-modal title="查看叫应详情" 
@@ -63,37 +78,46 @@
   </div>
 </template>
 <script>
-	const columns = [{
+import {getMsgRecord, getPublishRecord} from "@/api/list";
+import msgEditMod from "@/views/Admin/components/msgEditMod";
+import {getReviewDetailByWorker} from "@/api/review";
+  const columns = [{
 			title: '序号',
-			dataIndex: 'key',
+			dataIndex: 'index',
 			width: '8%',
+      scopedSlots: {
+        customRender: 'index'
+      }
 		},
 		{
 			title: '发布时间',
-			dataIndex: 'time',
+			dataIndex: 'publishingTime',
 			width: '15%',
 			scopedSlots: {
-				customRender: 'time'
-			}, //设置定制化表格数据
+				customRender: 'publishingTime'
+			} //设置定制化表格数据
 		},
 		{
 			title: '发布单位',
-			dataIndex: 'department',
+			dataIndex: 'publishingUnit',
 			width: '12%',
 		},
-		{
-			title: '类别',
-			dataIndex: 'category',
-			width: '8%',
-		},
-		{
-			title: '级别',
-			dataIndex: 'level',
-			scopedSlots: {
-				customRender: 'level'
-			}, //设置定制化表格数据
-			width: '8%',
-		},
+    {
+      title: '灾种',
+      dataIndex: 'disasterType',
+      width: '8%',
+      scopedSlots: {
+        customRender: 'disasterType'
+      }
+    },
+    {
+      title: '预警级别',
+      dataIndex: 'warningLevel',
+      scopedSlots: {
+        customRender: 'warningLevel'
+      }, //设置定制化表格数据
+      width: '8%',
+    },
 		{
 			title: '信息标题',
 			dataIndex: 'title',
@@ -109,10 +133,10 @@
 		},
 		{
 			title: '叫应情况',
-			dataIndex: 'receipt',
+			dataIndex: 'responseSituation',
 			width: '10%',
 			scopedSlots: {
-				customRender: 'receipt'
+				customRender: 'responseSituation'
 			}, //设置定制化表格数据
 		},
 		{
@@ -123,58 +147,113 @@
 			},
 		},
 	];
-	const data = [{
-			key: 1,
-			id:1001,
-			readed:false,
-			time: '2023年5月3日 15:30',
-			department: '自治区预警中心',
-			category: '气象',
-			level: '黄色',
-			title: '全疆高温红色预警',
-			attachment: '1',
-			receipt: '部分叫应'
-		},
-		{
-				key: 2,
-				id:1002,
-				readed:false,
-				time: '2023年5月3日 15:30',
-				department: '自治区预警中心',
-				category: '气象',
-				level: '黄色',
-				title: '全疆高温红色预警',
-				attachment: '1',
-				receipt: '全部叫应'
-			},{
-				key: 3,
-				id:1003,
-				readed:false,
-				time: '2023年5月3日 15:30',
-				department: '自治区预警中心',
-				category: '气象',
-				level: '黄色',
-				title: '全疆高温红色预警',
-				attachment: '1',
-				receipt: '均未叫应'
-			}]
 	export default {
+    name: 'release',
+    components: { msgEditMod },
 		data() {
 			return {
+        search:{
+          pageIndex: 1,
+          pageSize: 10,
+          searchParams:{
+            emergType: null,
+            startTime: '',
+            endTime: ''
+          }
+        },
+        timeRange: [],
 				category: 'default',
-				data,
+				data:[],
 				columns,
 				visible: false,
 				confirmLoading: false,
+        pagination: {
+          current: 1,
+          defaultCurrent: 1,
+          defaultPageSize: 10,
+          total: 0,
+          onChange: ( page, pageSize ) => this.onPageChange(page,pageSize),
+          showTotal: total => `共 ${total} 条`
+        },
+        riskOptions: [
+          {name: '地震',value: 1},
+          {name: '洪涝',value: 2},
+          {name: '气象',value: 3},
+          {name: '泥石流',value: 4},
+          {name: '水旱',value: 5},
+          {name: '森林草原火灾',value: 6}
+        ],
+        levelOptions: [
+          {name: '红色预警',value: 1},
+          {name: '橙色预警',value: 2},
+          {name: '黄色预警',value: 3},
+          {name: '蓝色预警',value: 4}
+        ]
 			}
 		},
+    created() {
+      const t = this
+      t.getData()
+    },
 		methods: {
-      onChange(value, dateString) {
-        console.log('Selected Time: ', value);
-        console.log('Formatted Selected Time: ', dateString);
+      async getData(){
+        const t = this
+        const res = await getPublishRecord(this.search)
+        if(res.data.code == 100){
+          t.data = res.data.data
+          t.pagination.total = res.data.total
+        }else{
+          this.$message.error(res.data.msg)
+        }
       },
-      onOk(value) {
+
+      openMod(type,data){
+        const t = this
+        getReviewDetailByWorker(data.id).then(res=>{
+          if(res.data.code == 100){
+            if(res.data.data){
+              t.$refs.msgEdit.openMod(type,res.data.data)
+            }else{
+              t.$message.error('查询信息详情失败')
+            }
+          }else{
+            this.$message.error(res.data.msg)
+          }
+        })
+      },
+
+      onPageChange(page, pageSize) {
+        const t= this
+        t.pagination.current = page
+        t.search.pageIndex = page
+        t.getData()
+      },
+
+      timeChange(value, dateString) {
+        const t = this
+        if(dateString){
+          t.search.searchParams.startTime = value[0].format('YYYY-MM-DD 00:00:00')
+          t.search.searchParams.endTime = value[1].format('YYYY-MM-DD 23:59:59')
+        }
+      },
+
+      timeOk(value) {
         console.log('onOk: ', value);
+      },
+
+      resetSearch(){
+        const t = this
+        t.search = {
+          pageIndex: 1,
+          pageSize: 10,
+          searchParams:{
+            emergType: null,
+            startTime: '',
+            endTime: ''
+          }
+        }
+        t.timeRange = []
+        t.getData()
       },
 
 			//弹出层
@@ -185,6 +264,13 @@
 			handleOk(e) {
 				this.visible = false;
 			},
+      getRiskName(disasterType){
+        return this.riskOptions.find(i => i.value === disasterType)?.name;
+      },
+
+      getLevelName(warningLevel){
+        return this.levelOptions.find(i => i.value === warningLevel)?.name;
+      }
 
 		}
 		}

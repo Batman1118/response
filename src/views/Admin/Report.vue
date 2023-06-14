@@ -1,175 +1,283 @@
 <template>
   <div class="inner">
-	  <a-radio-group v-model="category">
-	  	<a-radio-button value="default">
-	  		全部
-	  	</a-radio-button>
-	  	<a-radio-button value="1">
-	  		已审核
-	  	</a-radio-button>
-	  	<a-radio-button value="2">
-	  		未审核
-	  	</a-radio-button>
-	  </a-radio-group>
-	  <div style="float:right">
-	  	时间区间筛选：<a-range-picker :placeholder="['开始时间', '结束时间']"/>
-	  </div>
-	  <br/><br/>
-	  <!-- 表格实体部分-->
-	  <a-table :columns="columns" :data-source="data" bordered>
-		  <span slot="level" slot-scope="text">
-		  	<a-tag :color="text === '黄色' ? 'yellow' :text === '橙色'? 'orange':text === '红色'?'red':'blue'">
-		  		{{ text }}
-		  	</a-tag>
-		  </span>
-		  <template slot="attachment" slot-scope="text">
-		  	<span v-if="text==='无'">无</span>
-		  	<a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
-		  </template >
-	  	<template slot="operation" slot-scope="text, record, index">
-	  		<div class="editable-row-operations">
-				<a-button v-if="record.audit==='已审核'" type="primary" @click="showModal(record.id)" >
-					确认发布</a-button>&nbsp;&nbsp;
-	  			<router-link :to="{path:'/details',query: {id: record.id}}">信息详情</router-link>
-				&nbsp;&nbsp;<a style="color:red">删除</a>
-	  		</div>
-	  	</template>
-	  </a-table>
-	  <!-- 对话框 -->
-	  <a-modal title="信息发布" 
-	  okText="确认发布"
-	  cancelText="取消"
-	  :visible="visible" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleCancel">
-	  <p>确认发布 “[{{show_id}}]2023年5月23日，全疆黄色高温预警信息”？</p>
-	  </a-modal>
+    <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
+      <a-col :span="8">
+        <a-radio-group v-model="search.searchParams.reviewStatus" @change="getData">
+          <a-radio-button :value="null">
+            全部
+          </a-radio-button>
+          <a-radio-button :value="2">
+            审核通过
+          </a-radio-button>
+          <a-radio-button :value="1">
+            未审核
+          </a-radio-button>
+          <a-radio-button :value="3">
+            审核驳回
+          </a-radio-button>
+        </a-radio-group>
+      </a-col>
+      <a-col :span="16">
+        <a-row type="flex" justify="end" :gutter="12">
+          <a-col :span="8">
+            <a-range-picker
+                v-model="timeRange"
+                format="YYYY-MM-DD"
+                :placeholder="['开始时间', '结束时间']"
+                @change="timeChange"
+                @ok="onOk"
+                style="width: 100%"
+            />
+          </a-col>
+          <a-col :span="4">
+            <a-button type="primary" @click="getData">查询</a-button>
+            <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
+          </a-col>
+        </a-row>
+      </a-col>
+    </a-row>
+
+    <div class="table-cont">
+      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
+        <template #index="text,record,index">
+          {{ index+1 }}
+        </template>
+        <template #disasterType="text">
+          {{ getRiskName(text) }}
+        </template>
+        <template #attachment="text">
+          <span v-if="text==='无'">无</span>
+          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        </template >
+        <template #reviewStatus="reviewStatus">
+          <a-tag
+              :color="reviewStatus === 1 ? 'blue' : reviewStatus === 2 ? 'green' : 'red'"
+          >
+            {{ reviewStatus==1?'未审核':reviewStatus==2?'已审核':reviewStatus==3?'审核驳回':'' }}
+          </a-tag>
+        </template>
+        <template #operation="text, record, index">
+          <a-button type="primary" v-if="record.reviewStatus == 2" @click="confirmPost(record.id)">确认发布</a-button>
+          <a-button type="link" v-if="record.reviewStatus == 2 || record.reviewStatus == 3" @click="openMod('view',record)">查看信息详情</a-button>
+          <a-button class="del" type="link" @click="delData(record.id)">删除</a-button>
+        </template>
+      </a-table>
+    </div>
+    <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
   </div>
 </template>
-<script>
-	const columns = [{
-			title: '编号',
-			dataIndex: 'id',
-			width: '8%',
-		},
-		{
-			title: '提交审核时间',
-			dataIndex: 'time',
-			width: '13%',
-			scopedSlots: {
-				customRender: 'time'
-			}, //设置定制化表格数据
-		},
-		{
-			title: '发布单位',
-			dataIndex: 'department',
-			width: '12%',
-		},
-		{
-			title: '类别',
-			dataIndex: 'category',
-			width: '6%',
-		},
-		{
-			title: '级别',
-			dataIndex: 'level',
-			scopedSlots: {
-				customRender: 'level'
-			}, //设置定制化表格数据
-			width: '6%',
-		},
-		{
-			title: '信息标题',
-			dataIndex: 'title',
-			width: '16%',
-		},
-		{
-			title: '附件',
-			dataIndex: 'attachment',
-			width: '6%',
-			scopedSlots: {
-				customRender: 'attachment'
-			},
-		},
-		{
-			title: '审核情况',
-			dataIndex: 'audit',
-			width: '10%',
-			scopedSlots: {
-				customRender: 'audit'
-			}, //设置定制化表格数据
-		},
-		{
-			title: '操作',
-			dataIndex: 'operation',
-			scopedSlots: {
-				customRender: 'operation'
-			},
-		},
-	];
-	const data = [{
-			key: 1,
-			id:1001,
-			readed:false,
-			time: '2023年5月3日 15:30',
-			department: '自治区预警中心',
-			category: '气象',
-			level: '黄色',
-			title: '全疆高温红色预警',
-			attachment: '1',
-			audit: '已审核'
-		},
-		{
-				key: 2,
-				id:1002,
-				readed:false,
-				time: '2023年5月3日 15:30',
-				department: '自治区预警中心',
-				category: '气象',
-				level: '黄色',
-				title: '全疆高温红色预警',
-				attachment: '1',
-				audit: '未审核'
-			},{
-				key: 3,
-				id:1003,
-				readed:false,
-				time: '2023年5月3日 15:30',
-				department: '自治区预警中心',
-				category: '气象',
-				level: '黄色',
-				title: '全疆高温红色预警',
-				attachment: '1',
-				audit: '已审核'
-			}]
-	export default {
-		data() {
-			return {
-				category: 'default',
-				data,
-				columns,
-				visible: false,
-				confirmLoading: false,
-				show_id:''
-			}
-		},
-		methods: {
-			showModal(id) {
-				this.visible = true;
-				this.show_id=id
-			},
-			//确认发布
-			handleOk(e) {
-				this.ModalText = '正在发布，请稍候...';
-				this.confirmLoading = true;
-				setTimeout(() => {
-					this.visible = false;
-					this.confirmLoading = false;
-				}, 2000);
-			},
-			handleCancel(e) {
-				this.visible = false;
-			},
 
-		}
-		}
-		
+<script>
+
+import {getReviewDetail, getReviewRecord} from "@/api/review";
+import msgEditMod from '@/views/Admin/components/msgEditMod'
+import {delRecipient} from "@/api/user";
+import {deleteMsg, publishMsg} from "@/api/send";
+
+export default {
+  name: 'msgReview',
+  components: { msgEditMod },
+  data () {
+    return {
+      search:{
+        pageIndex: 1,
+        pageSize: 10,
+        searchParams:{
+          reviewStatus: null,
+          startTime: '',
+          endTime: ''
+        }
+      },
+      timeRange: [],
+      riskOptions: [
+        {name: '地震',value: 1},
+        {name: '洪涝',value: 2},
+        {name: '气象',value: 3},
+        {name: '泥石流',value: 4},
+        {name: '水旱',value: 5},
+        {name: '森林草原火灾',value: 6}
+      ],
+      pagination: {
+        current: 1,
+        defaultCurrent: 1,
+        defaultPageSize: 10,
+        total: 0,
+        onChange: ( page, pageSize ) => this.onPageChange(page,pageSize),
+        showTotal: total => `共 ${total} 条`
+      },
+      columns: [
+        {
+          title: '序号',
+          key: 'index',
+          scopedSlots: {
+            customRender: 'index'
+          },
+        },
+        {
+          title: '提交审核时间',
+          key: 'gmtReviewSubmit',
+          dataIndex: 'gmtReviewSubmit',
+        },
+        {
+          title: '发布单位',
+          key: 'publishingUnit',
+          dataIndex: 'publishingUnit',
+        },
+        {
+          title: '灾种',
+          dataIndex: 'disasterType',
+          key: 'disasterType',
+          scopedSlots: {
+            customRender: 'disasterType'
+          }, //设置定制化表格数据
+        },
+        {
+          title: '信息标题',
+          key: 'title',
+          dataIndex: 'title',
+        },
+        {
+          title: '附件',
+          key: 'attachment',
+          dataIndex: 'attachment',
+          scopedSlots: {
+            customRender: 'attachment'
+          },
+        },
+        {
+          title: '审核情况',
+          dataIndex: 'reviewStatus',
+          scopedSlots: {
+            customRender: 'reviewStatus'
+          }, //设置定制化表格数据
+        },
+        {
+          title: '操作',
+          dataIndex: 'operation',
+          scopedSlots: {
+            customRender: 'operation'
+          },
+        },
+      ],
+      data: []
+    }
+  },
+  created() {
+    const t = this
+    t.getData()
+  },
+  methods:{
+    async getData(){
+      const t = this
+      const res = await getReviewRecord(this.search)
+      if(res.data.code == 100){
+        t.data = res.data.data
+        t.pagination.total = res.data.total
+      }else{
+        this.$message.error(res.data.msg)
+      }
+    },
+
+    resetSearch(){
+      const t = this
+      t.search = {
+        pageIndex: 1,
+        pageSize: 10,
+        searchParams:{
+          reviewStatus: null,
+          startTime: '',
+          endTime: ''
+        }
+      }
+      t.timeRange = []
+      t.getData()
+    },
+
+    timeChange(value, dateString) {
+      const t = this
+      if(dateString){
+        t.search.searchParams.startTime = value[0].format('YYYY-MM-DD 00:00:00')
+        t.search.searchParams.endTime = value[1].format('YYYY-MM-DD 23:59:59')
+      }
+    },
+
+    confirmPost(id){
+      const t = this
+      this.$confirm({
+        title: '提示',
+        content: h => <div>是否发布该条信息？</div>,
+        cancelText: '取消',
+        okText: '确认',
+        centered: true,
+        async onOk() {
+          let res = await publishMsg(id)
+          if(res.data.code == 100){
+            t.$message.success('信息发布成功');
+            t.getData()
+          }else{
+            t.$message.warning(res.data.msg);
+          }
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
+    },
+
+    delData(id){
+      const t = this
+      this.$confirm({
+        title: '提示',
+        content: h => <div>是否删除该条信息？</div>,
+        cancelText: '取消',
+        okText: '确认',
+        centered: true,
+        async onOk() {
+          let res = await deleteMsg(id)
+          if(res.data.code == 100){
+            t.$message.success('信息删除成功');
+            t.getData()
+          }else{
+            t.$message.warning(res.data.msg);
+          }
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
+    },
+
+    openMod(type,data){
+      const t = this
+      getReviewDetail(data.id).then(res=>{
+        if(res.data.code == 100){
+          t.$refs.msgEdit.openMod(type,res.data.data)
+        }else{
+          this.$message.error(res.data.msg)
+        }
+      })
+    },
+
+    onPageChange(page, pageSize) {
+      const t= this
+      t.pagination.current = page
+      t.search.pageIndex = page
+      t.getData()
+    },
+
+    onOk(value) {
+      console.log('onOk: ', value);
+    },
+    getRiskName(disasterType){
+      return this.riskOptions.find(i => i.value === disasterType)?.name;
+    }
+
+  }
+}
 </script>
+
+<style lang="less" scoped>
+.del{
+  color: @danger;
+}
+</style>

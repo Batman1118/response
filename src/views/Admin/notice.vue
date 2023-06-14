@@ -1,146 +1,384 @@
 <template>
 	<div class="inner">
-		<h2>预警信息发布</h2>
-		<div class="left">
-			<a-input placeholder="请输入标题" style="height: 50px; font-size: 20px;" />
-			<br /><br />
-			<a-radio-group v-model="value" @change="onChange">
-				<a-radio :value="1">
-					蓝色
-				</a-radio>
-				<a-radio :value="2">
-					黄色
-				</a-radio>
-				<a-radio :value="3">
-					橙色
-				</a-radio>
-				<a-radio :value="4">
-					红色
-				</a-radio>
-			</a-radio-group>
-			<br /><br />
-			<a-radio-group default-value="a" button-style="solid">
-				<a-radio-button value="a">
-					常规
-				</a-radio-button>
-				<a-radio-button value="b">
-					紧临
-				</a-radio-button>
-			</a-radio-group>
-			<div class="ftright">
-				平级接收人选择：
-				<a-select mode="multiple" placeholder="选择平级接收单位" :value="selectedItems" style="width: 180px"
-					@change="handle">
-					<a-select-option v-for="item in filteredOptions" :key="item" :value="item">
-						{{ item }}
-					</a-select-option>
-				</a-select>
-				
-			</div>
+    <h2>预警信息发布</h2>
+    <a-form-model ref="ruleForm" :model="form" :rules="rules" :wrapper-col="wrapperCol">
+      <div class="left">
+        <a-form-model-item prop="title">
+          <a-input v-model="form.title" placeholder="请输入标题" style="height: 50px; font-size: 20px;" />
+        </a-form-model-item>
+        <!--      <a-row>-->
+        <!--        <a-col :span="12" style="display: flex;align-items: center">-->
+        <!--          <span style="display: block;margin-bottom: 24px">相关灾种</span>-->
 
-			<br /><br />
-			<a-textarea v-model="message" placeholder="请输入短信通知内容部分" :auto-size="{ minRows: 3, maxRows: 5 }" />
-			<br /><br />
-			<a-button>上传附件</a-button>  <div style="float: right;width:50%;text-align: right;">超时设置： <a-input style="width:100px;" placeholder="输入时间" /> 分钟</div>
-			<br /><br />
-			<span><b>发布单位：</b>{{department}}</span>
-			<br/><br/>
-			<!-- 子单位-->
-			<div style="margin-bottom: 10px">选择接收单位：</div>
-			<a-tree-select
-			    show-search
-          tree-checkable
-          treeCheckStrictly
-			    style="width: 100%"
-          v-model="svalue"
-			    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-			    placeholder="选择工作通知接收单位"
-			    allow-clear
-			    multiple
-			    tree-default-expand-all
-			    @change="onChanges"
-			    @search="onSearch"
-			    @select="onSelect"
-			  >
-        <a-tree-select-node key="0" value="all" title="全选">
-        </a-tree-select-node>
-			    <a-tree-select-node key="0-1" value="乌鲁木齐" title="乌鲁木齐(张XX 13268813610)">
-			      <a-tree-select-node key="0-1-1" value="米东区" title="米东区(张XX 13268813610)">
-			        <a-tree-select-node key="0-1-1-1" value="XX村1" title="XX村(李有田 13268813610)" />
-			      </a-tree-select-node>
-			      <a-tree-select-node key="0-1-2" value="天山区" title="天山区">
-			        <a-tree-select-node key="0-1-2-1" value="XX村2">
-			          <b slot="title" style="color: #08c">XX村</b>
-			        </a-tree-select-node>
-			      </a-tree-select-node>
-			    </a-tree-select-node>
-			  </a-tree-select>
-			  
-			  <br/><br/>
-			<div style="float: right;"><b>选择审批领导：</b> <a-select show-search placeholder="请选择审批领导"
-					option-filter-prop="children" style="width: 200px" :filter-option="filterOption"
-					@focus="handleFocus" @blur="handleBlur" @change="handleChange">
-					<a-select-option value="jack">
-						裴小威
-					</a-select-option>
-					<a-select-option value="lucy">
-						赵东升
-					</a-select-option>
-					<a-select-option value="tom">
-						王卫萍
-					</a-select-option>
-				</a-select></div>
-			<br /><br />
-			<a-button type="primary" class="ftright">
-				确认并提交审核
-			</a-button>
-		</div>
+        <!--        </a-col>-->
+        <!--        <a-col :span="12" style="display: flex;align-items: center;justify-content: right">-->
+        <!--          <span style="display: block;margin-bottom: 24px">预警级别：</span>-->
 
-		<div class="right">
-			<h2>短信预览</h2>
-			<div class="mobile">
-				<div class="mesg">
-					<P>【{{signname}}】{{message}}。发布单位：{{department}}</P>
-				</div>
+        <!--        </a-col>-->
+        <!--      </a-row>-->
 
-			</div>
-		</div>
+        <a-row>
+          <a-col :span="12">
+            <a-form-model-item prop="emergType">
+              <a-radio-group v-model="form.emergType" button-style="solid">
+                <a-radio-button :value="2">
+                  常规
+                </a-radio-button>
+                <a-radio-button :value="1">
+                  紧临
+                </a-radio-button>
+              </a-radio-group>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12" style="display: flex;align-items: center;justify-content: right">
+            <a-form-model-item prop="disasterType" style="margin-right: 20px">
+              <a-select placeholder="请选择相关灾种" v-model="form.disasterType" style="width: 240px" allowClear @change="handleRisk">
+                <a-select-option v-for="item in riskOptions" :key="item.value" :value="item.value">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+            <a-form-model-item prop="warningLevel">
+              <a-select placeholder="请选择预警级别" v-model="form.warningLevel" style="width: 240px" allowClear @change="handleLevel">
+                <a-select-option v-for="item in levelOptions" :key="item.value" :value="item.value">
+                  {{ item.name }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-form-model-item prop="content">
+          <a-textarea v-model="form.content" placeholder="请输入短信通知内容部分" :auto-size="{ minRows: 3, maxRows: 5 }" />
+        </a-form-model-item>
+        <a-row>
+          <a-col :span="12">
+            <a-button>上传附件</a-button>
+          </a-col>
+          <a-col :span="12" style="display: flex;align-items: center;justify-content: right">
+            <b style="margin-bottom: 24px">超时设置：</b>
+            <a-form-model-item prop="timeout">
+              <a-input v-model="form.timeout" style="width:200px;" placeholder="输入时间" suffix="分钟"/>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <span><b>发布单位：</b>{{form.publishingUnit}}</span>
+        <br/><br/>
+        <!-- 子单位-->
+        <a-row :gutter="24">
+          <a-col :span="12">
+            <div style="display:flex;justify-content: space-between;align-items: center;">
+              <b>选择接收单位：</b>
+              <a-checkbox :checked="checkAll" @change="checkChange">
+                全选
+              </a-checkbox>
+            </div>
+            <a-form-model-item prop="receiver">
+              <a-tree-select
+                  show-search
+                  tree-checkable
+                  treeCheckStrictly
+                  style="width: 100%"
+                  v-model="form.receiver"
+                  :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                  placeholder="选择工作通知接收单位"
+                  allow-clear
+                  multiple
+                  @change="depChanges"
+                  @search="onSearch"
+                  @select="onSelect"
+                  :tree-data="areaUsers"
+                  :replaceFields="replaceFields"
+              >
+              </a-tree-select>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12">
+            <b style="margin-bottom: 6px">平级接收人选择：</b>
+            <a-form-model-item prop="recipient">
+              <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
+                <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
+                  {{ item.recipientName }}
+                </a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="24" style="display: flex;align-items: center">
+          <a-col :span="12">
+            <b style="margin-bottom: 6px">选择审批领导：</b>
+            <a-form-model-item prop="reviewId">
+              <a-select show-search v-model="form.reviewId" placeholder="请选择审批领导" style="width: 300px">
+                <a-select-option v-for="(item,index) in leaders" :value="item.id" :key="index">{{item.name}}</a-select-option>
+              </a-select>
+            </a-form-model-item>
+          </a-col>
+          <a-col :span="12" style="text-align: right">
+            <a-button type="primary" style="width: 250px;" @click="confirmSend()">
+              确认并提交审核
+            </a-button>
+          </a-col>
+        </a-row>
+      </div>
 
+      <div class="right">
+        <h2>短信预览</h2>
+        <div class="mobile">
+          <div class="mesg">
+            <P>【{{form.title}}】{{form.content}}。发布单位：{{form.publishingUnit}}</P>
+          </div>
+
+        </div>
+      </div>
+    </a-form-model>
 	</div>
 </template>
 
 <script>
-
-	
-	const OPTIONS = ['自治区消防（李XX）', '自治区公安厅（王XX）', '自治区自然资源厅（刘XX）'];
+import {getAreaWithUserIfo, getPeerRecipient, getLeaders} from '@/api/user'
+  import {getUserInfo} from "@/util/storage";
+  import Cookies from "js-cookie";
+import {massSend, msgSend} from "@/api/send";
 	export default {
-		name: "release",
+		name: "notice",
 		data() {
 			return {
-				value: 1,
-				message: '',
-				signname: '自然灾害风险预警提示',
-				department: '自治区自然灾害综合监测预警中心',
-				selectedItems: [],
-				svalue:undefined,
+        userInfo: {},
+        wrapperCol: { span: 24 },
+        filteredOptions:[],
+        form: {
+          id: null,
+          title: '',
+          emergType: null,
+          disasterType: undefined,
+          warningLevel: undefined,
+          content: '',
+          publishingUnit: '',
+          districtId: null,
+          attachments: [],
+          timeout: null,
+          reviewId: null,
+          receiver: [],
+          recipient: [],
+          acceptingUnitIds: [],
+          peerRecipientIds: []
+        },
+        leaders: [],
+        checkAll: false,
+        areaUsers: [],
+        replaceFields: {
+          children:'children',
+          title:'name',
+          key:'id',
+          value: 'id'
+        },
+        riskOptions: [
+          {name: '地震',value: 1},
+          {name: '洪涝',value: 2},
+          {name: '气象',value: 3},
+          {name: '泥石流',value: 4},
+          {name: '水旱',value: 5},
+          {name: '森林草原火灾',value: 6}
+        ],
+        levelOptions: [
+          {name: '红色预警',value: 1},
+          {name: '橙色预警',value: 2},
+          {name: '黄色预警',value: 3},
+          {name: '蓝色预警',value: 4}
+        ],
+        rules: {
+          emergType: [{ required: true, message: '请选择紧急类型', trigger: 'change'}],
+          disasterType: [{ required: true, message: '请选择灾种', trigger: 'change'}],
+          warningLevel: [{ required: true, message: '请选择预警级别', trigger: 'change'}],
+          title: [{ required: true, message: '请输入信息标题', trigger: 'blur'}],
+          content: [{ required: true, message: '请输入信息内容', trigger: 'blur'}],
+          timeout: [{ required: true, message: '请输入超时时间', trigger: 'blur'}],
+          receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
+          reviewId: [{ required: true, message: '请选择审批人', trigger: 'change'}],
+          recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
+          // acceptingUnitIds: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
+          // peerRecipientIds: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
+        }
 			};
 		},
 		components: {},
-		computed: {
-			filteredOptions() {
-				return OPTIONS.filter(o => !this.selectedItems.includes(o));
-			},
-		},
+    created() {
+      const t = this
+      t.userInfo = getUserInfo()
+      t.form.districtId = t.userInfo.districtId
+      t.form.publishingUnit = t.userInfo.company
+      t.getSameLevel()
+      t.getAreaUsers()
+      t.getLeaders()
+    },
+    computed: {},
 		methods: {
+      // 获取同级接收人
+      async getSameLevel(){
+        let t = this
+        let res = await getPeerRecipient()
+        if(res.data.code == 100){
+          if(res.data.data){
+            t.filteredOptions = res.data.data
+          }else{
+            this.$message.warning('暂无数据');
+          }
+        }else{
+          this.$message.warning(res.data.msg);
+        }
+      },
+
+      // 获取接收单位
+      async getAreaUsers(){
+        let t = this
+        let res = await getAreaWithUserIfo()
+        if(res.data.code == 100){
+          if(res.data.data){
+            const treeD = []
+            t.userTitTree(res.data.data)
+            const obj = t.findNodeById(res.data.data,t.userInfo.districtId)
+            treeD.push(t.removeNodesWithoutUsers(obj))
+            t.areaUsers = treeD
+            t.unittype = this.findNodeById(this.areaUsers,t.userInfo.districtId)?.type
+          }else{
+            this.$message.warning('暂无数据');
+          }
+        }else{
+          this.$message.warning(res.data.msg);
+        }
+      },
+
+      // 获取领导
+      async getLeaders(){
+        let t = this
+        let res = await getLeaders()
+        if(res.data.code == 100){
+          if(res.data.data){
+            t.leaders = res.data.data
+          }else{
+            this.$message.warning('暂无数据');
+          }
+        }else{
+          this.$message.warning(res.data.msg);
+        }
+      },
+
 			//选择子部门部分
-			onChanges(value) {
-            if(value.find(i=>i.value == 'all')){
-              console.log('全选了')
-            }else{
-              this.svalue = value;
+      depChanges(value,label,extra) {
+        const t = this
+        if(t.form.receiver.length == 0){
+          t.checkAll = false
+        }
+      },
+      checkChange(e) {
+        const t = this
+        this.checkAll = !this.checkAll
+        if(t.checkAll == true){
+          t.form.receiver = t.traverseTree(t.areaUsers[0])
+        }else{
+          t.form.receiver = []
+        }
+      },
+
+      confirmSend(){
+        this.$refs.ruleForm.validate(valid => {
+          if (valid) {
+            this.form.acceptingUnitIds = []
+            this.form.peerRecipientIds = []
+            const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
+            console.log(aList,'a')
+            const newAList = [].concat(...aList)
+            console.log(newAList,'b')
+            for(let i of newAList){
+              const {realName,...data} = i
+              const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,...rest} = data
+              const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
+              this.form.acceptingUnitIds.push(obj)
             }
-            console.log(this.svalue);
-			    },
+            const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
+            for(let i of bList){
+              const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
+              const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
+              this.form.peerRecipientIds.push(obj)
+            }
+            const {receiver,recipient,id,...data} = this.form
+            msgSend(data).then( res =>{
+              if(res.data.code == 100){
+                this.$message.success('信息已提交审核')
+              }else{
+                this.$message.error(res.data.msg)
+              }
+              this.$refs.ruleForm.clearValidate()
+              this.$refs.ruleForm.resetFields()
+            })
+          }else{
+            console.log('error submit!!');
+            return false;
+          }
+        })
+      },
+
+
+// 根据id查对象
+      findNodeById(data,value) {
+        for (const node of data) {
+          if (node.id === value) {
+            return node;
+          }
+          if (node.children) {
+            const foundNode = this.findNodeById(node.children, value);
+            if (foundNode) {
+              return foundNode;
+            }
+          }
+        }
+        return null;
+      },
+
+      // 将树状数据所有id和name放入对象数组
+      traverseTree(treeData) {
+        let result = [];
+        function traverse(node) {
+          result.push({ label: node.name, value: node.id });
+          if (node.children && node.children.length > 0) {
+            for (let child of node.children) {
+              traverse(child);
+            }
+          }
+        }
+        traverse(treeData);
+        return result;
+      },
+
+      // 将树状数据name字段放入users的姓名电话
+      userTitTree(treeData) {
+        for(const node of treeData){
+          if(node.users){
+            node.users = node.users.map((i)=>{
+              return{
+                ...i,
+                unittype: node.type,
+                districtId: node.id
+              }
+            })
+            node.name = node.name + '('+node.users.map(i=>i.name +' '+ i.phone).join(',')+')'
+          }
+          if(node.children){
+            this.userTitTree(node.children)
+          }
+        }
+        return treeData
+      },
+      // 将users为null的节点删除
+      removeNodesWithoutUsers(node) {
+          if (node.users === null) {
+            return null; // 返回 null 表示删除节点
+          }
+          if (node.children && node.children.length > 0) {
+            node.children = node.children.map(child => this.removeNodesWithoutUsers(child)).filter(Boolean);
+          }
+          return node;
+      },
+
       onSearch() {
         console.log(...arguments);
       },
@@ -151,6 +389,13 @@
 			handle(selectedItems) {
 				this.selectedItems = selectedItems;
 			},
+      handleRisk(selectedItems) {
+        // this.selectedItems = selectedItems;
+      },
+      handleLevel(selectedItems) {
+        // this.selectedItems = selectedItems;
+      },
+
 			onChange(){
 				console.log(this.value)
 			},

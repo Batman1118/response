@@ -53,8 +53,8 @@ const routes = [
 	    component: () => import('@/views/Admin/Audit'),
 	  },
       {
-        path: '/torelease',
-        name: 'torelease',
+        path: '/notice',
+        name: 'notice',
         meta: { title: '信息编辑' },
         component: () => import('@/views/Admin/notice'),
       },
@@ -74,7 +74,7 @@ const routes = [
         path: '/history',
         name: 'history',
         meta: { title: '历史信息' },
-        component: () => import('@/views/Admin/History'),
+        component: () => import('@/views/Admin/history'),
       },
 	  {
 	    path: '/callRecord',

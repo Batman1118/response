@@ -7,7 +7,7 @@
       <a-col :span="20">
         <a-row type="flex" justify="end" :gutter="12">
           <a-col :span="4">
-            <a-cascader :options="areaData" v-model="areaVal" placeholder="行政规划" expandTrigger="hover" changeOnSelect @change="onChange" style="width: 100%"/>
+            <a-cascader :options="areaData" v-model="areaVal" placeholder="行政规划" expandTrigger="hover" :fieldNames="fieldNames" changeOnSelect @change="onChange" style="width: 100%"/>
           </a-col>
           <a-col :span="4">
             <a-select v-model="search.searchParams.unittype" placeholder="监管层级" style="width: 100%">
@@ -44,7 +44,7 @@
           <a-tag
               :color="unittype === 1 ? 'purple' : unittype === 2 ? 'blue' : unittype === 3 ? 'cyan' : 'green'"
           >
-            {{ unittype==1?'省级':unittype==2?'地（市、州）级':unittype==3?'区县级':'村（乡、镇）级' }}
+            {{ unittype==1?'省级':unittype==2?'地（市、州）级':unittype==3?'区县级':unittype==4?'村（乡、镇）级':'管理员' }}
           </a-tag>
         </template>
         <template #area="text,row">
@@ -62,8 +62,14 @@
           <a-button type="link" @click="editPwd(row)">重置密码</a-button>
         </template>
       </a-table>
+<!--      <a-pagination-->
+<!--          :total="85"-->
+<!--          :show-total="total => `Total ${total} items`"-->
+<!--          :page-size="20"-->
+<!--          :default-current="1"-->
+<!--      />-->
     </div>
-    <user-mod ref="userMod" @refresh="getUserList"></user-mod>
+    <user-mod ref="userMod" :unitType="unittype" @refresh="getUserList"></user-mod>
     <pwd-mod ref="pwdMod" @refresh="getUserList"></pwd-mod>
   </div>
 </template>
@@ -72,8 +78,9 @@
 import {getUser,delUser} from '@/api/user'
 import userMod from "@/views/Admin/components/userMod"
 import pwdMod from "@/views/Admin/components/pwdMod";
-import {loginOut} from "@/api/login";
-import {Session} from "@/util/storage";
+import {getDistrictInfo, loginOut} from "@/api/login";
+import {getUserInfo, Session} from "@/util/storage";
+import Cookies from "js-cookie";
 export default {
   name: 'user',
   components: {
@@ -83,6 +90,7 @@ export default {
   data () {
     return {
       areaVal: [],
+      unittype: null,
       search:{
         pageIndex: 1,
         pageSize: 10,
@@ -149,57 +157,53 @@ export default {
         defaultCurrent: 1,
         defaultPageSize: 10,
         total: 0,
-        onChange: ( page, pageSize ) => this.onPageChange(page,pageSize)
+        onChange: ( page, pageSize ) => this.onPageChange(page,pageSize),
+        showTotal: total => `共 ${total} 条`
       },
-      areaData: [
-        {
-          value: 1,
-          label: '江苏省',
-          children: [
-            {
-              value: 11,
-              label: '苏州市',
-              children: [
-                {
-                  value: 111,
-                  label: '工业园区',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          value: 2,
-          label: '新疆维吾尔自治区',
-          children: [
-            {
-              value: 21,
-              label: '乌鲁木齐市',
-              children: [
-                {
-                  value: 211,
-                  label: '国泰新华',
-                },
-              ],
-            },
-          ],
-        },
-      ]
+      areaData: [],
+      fieldNames:{
+        label: 'name',
+        value: 'id',
+        children: 'children'
+      }
     }
   },
   created() {
     const t = this
+    t.unittype = getUserInfo().unittype
+    console.log(t.unittype,'unit')
     t.getUserList()
+    t.getDistrictInfo()
   },
   methods:{
     async getUserList(){
       const t = this
-      const res = await getUser(t.search)
-      if(res.data.code == 100){
-        t.tableData = res.data.data
-        t.pagination.total = res.data.total
+      if(t.search.searchParams.realName == '' && t.search.searchParams.districtId == null && t.search.searchParams.unittype == null){
+        const {searchParams,...data} = t.search
+        const res = await getUser(data)
+        if(res.data.code == 100){
+          t.tableData = res.data.data
+          t.pagination.total = res.data.total
+        }else{
+          t.$message.warning(res.data.msg);
+        }
       }else{
-        t.$message.warning(res.data.msg);
+        const res = await getUser(t.search)
+        if(res.data.code == 100){
+          t.tableData = res.data.data
+          t.pagination.total = res.data.total
+        }else{
+          t.$message.warning(res.data.msg);
+        }
+      }
+    },
+
+    async getDistrictInfo(){
+      let res = await getDistrictInfo()
+      if(res.data.code == 100){
+        this.areaData = res.data.data
+      } else {
+        this.$message.warning(res.data.msg);
       }
     },
 
@@ -257,10 +261,13 @@ export default {
     onPageChange(page, pageSize) {
       const t= this
       t.pagination.current = page
+      t.search.pageIndex = page
+      t.getUserList()
     },
     onChange(value) {
       const t = this
       t.search.searchParams.districtId = value[value.length - 1]
+      console.log(value,'val')
     },
     findAreaById(data,value) {
       for (const node of data) {
