@@ -1,5 +1,13 @@
 <template>
 	<div class="inner">
+    <a-alert
+        message="管理员身份无法进行信息编辑操作"
+        banner
+        closable
+        v-if="userInfo.role.id === 1"
+        type="error"
+        style="margin-bottom: 12px"
+    />
     <h2>预警信息发布</h2>
     <a-form-model ref="ruleForm" :model="form" :rules="rules" :wrapper-col="wrapperCol">
       <div class="left">
@@ -52,7 +60,17 @@
         </a-form-model-item>
         <a-row>
           <a-col :span="12">
-            <a-button>上传附件</a-button>
+            <a-upload
+                :action="uploadUrl"
+                :file-list="fileList"
+                @change="fileChange"
+                :headers="header"
+                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar"
+                :data="{module: 'naturalDisasterPath'}"
+                :remove="(file)=>{removeFile(file)}"
+            >
+              <a-button> <a-icon type="upload" />上传附件</a-button>
+            </a-upload>
           </a-col>
           <a-col :span="12" style="display: flex;align-items: center;justify-content: right">
             <b style="margin-bottom: 24px">超时设置：</b>
@@ -108,25 +126,23 @@
             <b style="margin-bottom: 6px">选择审批领导：</b>
             <a-form-model-item prop="reviewId">
               <a-select show-search v-model="form.reviewId" placeholder="请选择审批领导" style="width: 300px">
-                <a-select-option v-for="(item,index) in leaders" :value="item.id" :key="index">{{item.name}}</a-select-option>
+                <a-select-option v-for="(item,index) in leaders" :value="item.id" :key="index">{{item.realName}}</a-select-option>
               </a-select>
             </a-form-model-item>
           </a-col>
           <a-col :span="12" style="text-align: right">
-            <a-button type="primary" style="width: 250px;" @click="confirmSend()">
+            <a-button type="primary" style="width: 250px;" @click="confirmSend()" :disabled="userInfo.role.id==1?true:false">
               确认并提交审核
             </a-button>
           </a-col>
         </a-row>
       </div>
-
       <div class="right">
         <h2>短信预览</h2>
         <div class="mobile">
           <div class="mesg">
-            <P>【{{form.title}}】{{form.content}}。发布单位：{{form.publishingUnit}}</P>
+            <P>【自然灾害风险预警提示】{{form.content}}<br>发布单位：{{form.publishingUnit}}</P>
           </div>
-
         </div>
       </div>
     </a-form-model>
@@ -137,7 +153,9 @@
 import {getAreaWithUserIfo, getPeerRecipient, getLeaders} from '@/api/user'
   import {getUserInfo} from "@/util/storage";
   import Cookies from "js-cookie";
+  import axios from "axios";
 import {massSend, msgSend} from "@/api/send";
+import {deleteFile} from "@/api/list";
 	export default {
 		name: "notice",
 		data() {
@@ -197,13 +215,23 @@ import {massSend, msgSend} from "@/api/send";
           recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
           // acceptingUnitIds: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           // peerRecipientIds: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
-        }
+        },
+        uploadUrl: '',
+        fileList: [],
+        header: {
+          uid: null,
+          tk: Cookies.get('resTk')
+        },
+        delList: []
 			};
 		},
 		components: {},
     created() {
       const t = this
+      const { baseUrl } = require('../../../config/env.' + process.env.NODE_ENV)
+      t.uploadUrl= baseUrl + '/attachment/upload/detail'
       t.userInfo = getUserInfo()
+      t.header.uid = t.userInfo.uid
       t.form.districtId = t.userInfo.districtId
       t.form.publishingUnit = t.userInfo.company
       t.getSameLevel()
@@ -220,7 +248,7 @@ import {massSend, msgSend} from "@/api/send";
           if(res.data.data){
             t.filteredOptions = res.data.data
           }else{
-            this.$message.warning('暂无数据');
+            console.log('暂无数据')
           }
         }else{
           this.$message.warning(res.data.msg);
@@ -233,14 +261,14 @@ import {massSend, msgSend} from "@/api/send";
         let res = await getAreaWithUserIfo()
         if(res.data.code == 100){
           if(res.data.data){
-            const treeD = []
+            // const treeD = []
             t.userTitTree(res.data.data)
-            const obj = t.findNodeById(res.data.data,t.userInfo.districtId)
-            treeD.push(t.removeNodesWithoutUsers(obj))
-            t.areaUsers = treeD
+            // treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
+            console.log(res.data.data)
+            t.areaUsers = t.findNodeById(res.data.data,t.userInfo.districtId).children
             t.unittype = this.findNodeById(this.areaUsers,t.userInfo.districtId)?.type
           }else{
-            this.$message.warning('暂无数据');
+            console.log('暂无数据')
           }
         }else{
           this.$message.warning(res.data.msg);
@@ -255,7 +283,7 @@ import {massSend, msgSend} from "@/api/send";
           if(res.data.data){
             t.leaders = res.data.data
           }else{
-            this.$message.warning('暂无数据');
+            console.log('暂无数据')
           }
         }else{
           this.$message.warning(res.data.msg);
@@ -279,34 +307,79 @@ import {massSend, msgSend} from "@/api/send";
         }
       },
 
+      fileChange(info) {
+        let fileList = [...info.fileList];
+        // 2. read from response and show file link
+        fileList = fileList.map(file => {
+          if(file.status == 'done'){
+            if (file.response) {
+              const res = file.response
+              if(res.code == 100){
+                this.$message.success('文件上传成功')
+              }else{
+                this.$message.error('文件上传失败')
+              }
+              // Component will show file.url as link
+              file.url = res.data.fileUrl
+            }
+          }
+          return file;
+        });
+        this.fileList = fileList;
+      },
+
+      removeFile(file){
+        this.delList.push(file.uid)
+      },
+
+      async deleteFile(){
+        const t = this
+        for(let i of t.delList){
+          const res = await deleteFile(i)
+          if(res.data.code == 100){
+            console.log('文件删除成功')
+          }else{
+            t.$message.error(res.data.msg)
+          }
+        }
+      },
+
       confirmSend(){
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
             this.form.acceptingUnitIds = []
             this.form.peerRecipientIds = []
             const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
-            console.log(aList,'a')
+            if(aList.includes(null)){
+              this.$message.error('选择接收单位时存在无用户的单位')
+              return
+            }
             const newAList = [].concat(...aList)
-            console.log(newAList,'b')
             for(let i of newAList){
               const {realName,...data} = i
               const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,...rest} = data
               const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
               this.form.acceptingUnitIds.push(obj)
             }
-            const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
-            for(let i of bList){
-              const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
-              const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
-              this.form.peerRecipientIds.push(obj)
+            if(this.form.recipient.length>0){
+              const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
+              for(let i of bList){
+                const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
+                const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
+                this.form.peerRecipientIds.push(obj)
+              }
             }
+            this.form.attachments = this.fileList.map(i=>i.response.data.id)
             const {receiver,recipient,id,...data} = this.form
             msgSend(data).then( res =>{
               if(res.data.code == 100){
+                this.deleteFile()
                 this.$message.success('信息已提交审核')
               }else{
                 this.$message.error(res.data.msg)
               }
+              this.fileList = []
+              this.delList = []
               this.$refs.ruleForm.clearValidate()
               this.$refs.ruleForm.resetFields()
             })
@@ -353,6 +426,7 @@ import {massSend, msgSend} from "@/api/send";
       userTitTree(treeData) {
         for(const node of treeData){
           if(node.users){
+            node.users = node.users.filter(i=>i.roleId == 3)
             node.users = node.users.map((i)=>{
               return{
                 ...i,
@@ -360,7 +434,7 @@ import {massSend, msgSend} from "@/api/send";
                 districtId: node.id
               }
             })
-            node.name = node.name + '('+node.users.map(i=>i.name +' '+ i.phone).join(',')+')'
+            node.name = node.name + '('+node.users.map(i=>i.realName +' '+ i.phone).join(',')+')'
           }
           if(node.children){
             this.userTitTree(node.children)
@@ -369,15 +443,15 @@ import {massSend, msgSend} from "@/api/send";
         return treeData
       },
       // 将users为null的节点删除
-      removeNodesWithoutUsers(node) {
-          if (node.users === null) {
-            return null; // 返回 null 表示删除节点
-          }
-          if (node.children && node.children.length > 0) {
-            node.children = node.children.map(child => this.removeNodesWithoutUsers(child)).filter(Boolean);
-          }
-          return node;
-      },
+      // removeNodesWithoutUsers(node) {
+      //     if (node.users === null && node.children === null) {
+      //       return null; // 返回 null 表示删除节点
+      //     }
+      //     if (node.children && node.children.length > 0) {
+      //       node.children = node.children.map(child => this.removeNodesWithoutUsers(child)).filter(Boolean);
+      //     }
+      //     return node;
+      // },
 
       onSearch() {
         console.log(...arguments);
@@ -395,24 +469,6 @@ import {massSend, msgSend} from "@/api/send";
       handleLevel(selectedItems) {
         // this.selectedItems = selectedItems;
       },
-
-			onChange(){
-				console.log(this.value)
-			},
-			handleChange(value) {
-				console.log(`selected ${value}`);
-			},
-			handleBlur() {
-				console.log('blur');
-			},
-			handleFocus() {
-				console.log('focus');
-			},
-			filterOption(input, option) {
-				return (
-					option.componentOptions.children[0].text.toLowerCase().indexOf(input.toLowerCase()) >= 0
-				);
-			},
 		},
 	}
 </script>

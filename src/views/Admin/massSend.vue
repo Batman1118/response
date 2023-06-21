@@ -1,5 +1,13 @@
 <template>
 	<div class="inner">
+    <a-alert
+        message="管理员身份无法进行短信群发操作"
+        banner
+        closable
+        v-if="userInfo.role.id === 1"
+        type="error"
+        style="margin-bottom: 12px"
+    />
 		<h2>预警信息发布</h2>
     <a-form-model ref="ruleForm" :model="form" :rules="rules" :wrapper-col="wrapperCol">
 		<div class="left">
@@ -96,7 +104,7 @@
           <div>
             <b>平级接收人选择：</b>
           </div>
-          <a-form-model-item prop="recipient">
+          <a-form-model-item>
             <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
               <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
                 {{ item.recipientName }}
@@ -122,7 +130,7 @@
 <!--				</a-select>-->
 <!--      </div>-->
       <div style="display: flex;justify-content: right">
-        <a-button type="primary" style="width: 250px;" @click="confirmSend()">
+        <a-button type="primary" style="width: 250px;" @click="confirmSend()" :disabled="userInfo.role.id==1?true:false">
           确认发送
         </a-button>
       </div>
@@ -149,7 +157,7 @@ import {getUserInfo} from "@/util/storage";
 		name: "massSend",
 		data() {
 			return {
-        userInfo: {},
+        userInfo: getUserInfo(),
 				department: '自治区自然灾害综合监测预警中心',
         filteredOptions:[],
         wrapperCol: { span: 24 },
@@ -193,7 +201,7 @@ import {getUserInfo} from "@/util/storage";
           warningLevel: [{ required: true, message: '请选择预警级别', trigger: 'change'}],
           content: [{ required: true, message: '请输入信息内容', trigger: 'blur'}],
           receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
-          recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
+          // recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
           // verticalRecipient: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           // horizontalRecipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
         }
@@ -202,7 +210,6 @@ import {getUserInfo} from "@/util/storage";
 		components: {},
     created() {
       const t = this
-      t.userInfo = getUserInfo()
       t.form.publishingUnit = t.userInfo.company
       t.getSameLevel()
       t.getAreaUsers()
@@ -218,7 +225,7 @@ import {getUserInfo} from "@/util/storage";
           if(res.data.data){
             t.filteredOptions = res.data.data
           }else{
-            this.$message.warning('暂无数据');
+            console.log('暂无数据')
           }
         }else{
           this.$message.warning(res.data.msg);
@@ -235,8 +242,9 @@ import {getUserInfo} from "@/util/storage";
             t.userTitTree(res.data.data)
             treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
             t.areaUsers = treeD
+            console.log(t.areaUsers,t.unittype,'696969')
           }else{
-            this.$message.warning('暂无数据');
+            console.log('暂无数据')
           }
         }else{
           this.$message.warning(res.data.msg);
@@ -271,18 +279,25 @@ import {getUserInfo} from "@/util/storage";
             this.form.verticalRecipient = []
             this.form.horizontalRecipient = []
             const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
+            if(aList.includes(null)){
+              this.$message.error('选择接收单位时存在无用户的单位')
+              return
+            }
             const newAList = [].concat(...aList)
             for(let i of newAList){
-              const {realName,...data} = i
+              const {realName,id,...data} = i
               const {company: recipientUnit,...rest} = data
               const obj = {recipientUnit,recipientType:1,...rest}
               this.form.verticalRecipient.push(obj)
             }
-            const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
-            for(let i of bList){
-              const {recipientName: name, company: recipientUnit,...rest} = i
-              const obj = {name,recipientUnit,recipientType:2,...rest}
-              this.form.horizontalRecipient.push(obj)
+            if(this.form.recipient.length>0){
+              const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
+              for(let i of bList){
+                const {recipientName: name, company: recipientUnit,...rest} = i
+                const obj = {name,recipientUnit,recipientType:2,...rest}
+                const {id,...noId} = obj
+                this.form.horizontalRecipient.push(noId)
+              }
             }
             const {receiver,recipient,...data} = this.form
             massSend(data).then( res =>{
@@ -372,7 +387,7 @@ import {getUserInfo} from "@/util/storage";
       userTitTree(treeData) {
         for(const node of treeData){
           if(node.users){
-            node.name = node.name + '('+node.users.map(i=>i.name +' '+ i.phone).join(',')+')'
+            node.name = node.name + '('+node.users.map(i=>i.realName +' '+ i.phone).join(',')+')'
           }
           if(node.children){
             this.userTitTree(node.children)

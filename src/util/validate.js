@@ -215,6 +215,12 @@ export function verifyPhone(val) {
     else return true;
 }
 
+// 简单校验手机号（十一位数字则通过）
+export function verifySimplePhone(val) {
+    var regex = /^\d{11}$/;  // 正则表达式，\d 匹配数字，{11} 表示匹配11次
+    return regex.test(val);
+}
+
 /**
  * 国内电话号码
  * @param val 当前值字符串

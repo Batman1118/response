@@ -215,14 +215,15 @@ export default {
         cancelText: '取消',
         okText: '确认',
         centered: true,
-        async onOk() {
-          let res = await delUser(row.id)
-          if(res.data.code == 100){
-            t.$message.success('删除用户信息成功');
-            t.getUserList()
-          }else{
-            t.$message.warning(res.data.msg);
-          }
+        onOk() {
+          delUser(row.id).then(res=>{
+            if(res.data.code == 100){
+              t.$message.success('删除用户信息成功');
+              t.getUserList()
+            }else{
+              t.$message.warning(res.data.msg);
+            }
+          })
         },
         onCancel() {
           console.log('Cancel');

@@ -59,7 +59,23 @@
         </a-form-model-item>
         <a-row>
           <a-col :span="12">
-            <a-button>上传附件</a-button>
+            <a-upload
+                :disabled="disable"
+                :action="uploadUrl"
+                :file-list="fileList"
+                @change="fileChange"
+                :headers="header"
+                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar"
+                :data="{module: 'naturalDisasterPath'}"
+                @download="downloadFile"
+                :remove="(file)=>{removeFile(file)}"
+                :showUploadList="{
+                  showRemoveIcon: true,
+                  showDownloadIcon: true
+                }"
+            >
+              <a-button> <a-icon type="upload" />上传附件</a-button>
+            </a-upload>
           </a-col>
           <a-col :span="12" style="display: flex;align-items: center;justify-content: right">
             <b style="margin-bottom: 24px">超时设置：</b>
@@ -102,7 +118,7 @@
           </a-col>
           <a-col :span="12">
             <b style="margin-bottom: 6px">平级接收人选择：</b>
-            <a-form-model-item prop="recipient">
+            <a-form-model-item>
               <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle" :disabled="disable">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
                   {{ item.recipientName }}
@@ -126,7 +142,7 @@
             <b style="margin-bottom: 6px">选择审批领导：</b>
             <a-form-model-item prop="reviewId">
               <a-select show-search v-model="form.reviewId" placeholder="请选择审批领导">
-                <a-select-option v-for="(item,index) in leaders" :value="item.id" :key="index">{{item.name}}</a-select-option>
+                <a-select-option v-for="(item,index) in leaders" :value="item.id" :key="index">{{item.realName}}</a-select-option>
               </a-select>
             </a-form-model-item>
           </a-col>
@@ -142,9 +158,8 @@
         <h2>短信预览</h2>
         <div class="mobile">
           <div class="mesg">
-            <P>【{{form.title}}】{{form.content}}。发布单位：{{form.publishingUnit}}</P>
+            <P>【自然灾害风险预警提示】{{form.content}}<br>发布单位：{{form.publishingUnit}}</P>
           </div>
-
         </div>
       </div>
     </a-form-model>
@@ -152,11 +167,13 @@
 </template>
 
 <script>
-import {getAreaWithUserIfo, getPeerRecipient, getLeaders} from '@/api/user'
+import {getAreaWithUserIfo, getPeerRecipient, getLeaders, delRecipient} from '@/api/user'
 import {getUserInfo} from "@/util/storage";
 import Cookies from "js-cookie";
 import {massSend, msgSend} from "@/api/send";
 import {postReview} from "@/api/review";
+import axios from "axios";
+import {deleteFile} from "@/api/list";
 export default {
   name: "msgEditMod",
   data() {
@@ -217,16 +234,26 @@ export default {
         timeout: [{ required: true, message: '请输入超时时间', trigger: 'blur'}],
         receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
         reviewId: [{ required: true, message: '请选择审批人', trigger: 'change'}],
-        recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
+        // recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
         // acceptingUnitIds: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
         // peerRecipientIds: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
-      }
+      },
+      uploadUrl: '',
+      fileList: [],
+      header: {
+        uid: null,
+        tk: Cookies.get('resTk')
+      },
+      delList: []
     };
   },
   components: {},
   created() {
     const t = this
+    const { baseUrl } = require('../../../../config/env.' + process.env.NODE_ENV)
+    t.uploadUrl= baseUrl + '/attachment/upload/detail'
     t.userInfo = getUserInfo()
+    t.header.uid = t.userInfo.uid
     t.form.districtId = t.userInfo.districtId
     t.form.publishingUnit = t.userInfo.company
     t.getSameLevel()
@@ -236,31 +263,62 @@ export default {
   methods: {
     openMod(type,data){
       const t = this
-      for(let i in data){
-        if(t.isValidKey(i,t.form)){
-          t.form[i] = data[i]
-        }
-      }
-      const arr = data.acceptingUnitIds.map((i)=>{return {
-        value: i.districtId
-      }})
-      t.form.receiver = JSON.parse(JSON.stringify(arr)).filter(
-          (item, index) => JSON.parse(JSON.stringify(arr)).findIndex(obj => obj.value === item.value) === index
-      )
-      t.form.recipient = data.peerRecipientIds.map(i=>i.recipienterId)
       t.form.acceptingUnitIds = []
       t.form.peerRecipientIds = []
-      if(type == 'review') {
-        t.title = '信息审核'
-        t.disable = false
-      }else if(type == 'view'){
-        t.title = '信息详情'
-        t.disable = true
+      if(type == 'review' || type == 'view') {
+        for(let i in data){
+          if(t.isValidKey(i,t.form)){
+            t.form[i] = data[i]
+          }
+        }
+        if(data.attachments && data.attachments.length>0){
+          t.fileList = data.attachments.map((i)=>{
+            return {
+              uid: i.id,
+              name: i.attachementName,
+              status: 'done',
+              url: i.attachement
+            }
+          })
+        }else{
+          t.fileList = []
+        }
+        const arr = data.acceptingUnitIds.map((i)=>{return {
+          value: i.districtId
+        }})
+        t.form.receiver = JSON.parse(JSON.stringify(arr)).filter(
+            (item, index) => JSON.parse(JSON.stringify(arr)).findIndex(obj => obj.value === item.value) === index
+        )
+        t.form.recipient = data.peerRecipientIds.map(i=>i.recipienterId)
+        if(type == 'review'){
+          t.title = '信息审核'
+          t.disable = false
+        }else{
+          t.title = '信息详情'
+          t.disable = true
+        }
       }else{
+        t.form.title = data.title
+        t.form.emergType = data.emergType
+        t.form.disasterType = data.disasterType
+        t.form.warningLevel = data.warningLevel
+        t.form.content = data.content
+        t.form.timeout = data.timeout
+        if(data.attachments && data.attachments.length>0){
+          t.fileList = data.attachments.map((i)=>{
+            return {
+              uid: i.id,
+              name: i.attachementName,
+              status: 'done',
+              url: i.attachement
+            }
+          })
+        }else{
+          t.fileList = []
+        }
         t.title = '信息转发'
         t.getLeaders()
         t.disable = false
-
       }
       t.visible = true
     },
@@ -276,7 +334,7 @@ export default {
         if(res.data.data){
           t.filteredOptions = res.data.data
         }else{
-          this.$message.warning('暂无数据');
+          console.log('暂无数据')
         }
       }else{
         this.$message.warning(res.data.msg);
@@ -289,13 +347,13 @@ export default {
       let res = await getAreaWithUserIfo()
       if(res.data.code == 100){
         if(res.data.data){
-          const treeD = []
+          // const treeD = []
           t.userTitTree(res.data.data)
-          treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
-          t.areaUsers = treeD
+          // treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
+          t.areaUsers = t.findNodeById(res.data.data,t.userInfo.districtId).children
           t.unittype = this.findNodeById(this.areaUsers,t.userInfo.districtId)?.type
         }else{
-          this.$message.warning('暂无数据');
+          console.log('暂无数据')
         }
       }else{
         this.$message.warning(res.data.msg);
@@ -310,7 +368,7 @@ export default {
         if(res.data.data){
           t.leaders = res.data.data
         }else{
-          this.$message.warning('暂无数据');
+          console.log('暂无数据')
         }
       }else{
         this.$message.warning(res.data.msg);
@@ -334,12 +392,54 @@ export default {
       }
     },
 
+    fileChange(info) {
+      let fileList = [...info.fileList];
+      // 2. read from response and show file link
+      fileList = fileList.map(file => {
+        if(file.status == 'done'){
+          if (file.response) {
+            const res = file.response
+            if(res.code == 100){
+              this.$message.success('文件上传成功')
+            }else{
+              this.$message.error('文件上传失败')
+            }
+            // Component will show file.url as link
+            file.url = res.data.fileUrl
+          }
+        }
+        return file;
+      });
+      this.fileList = fileList;
+    },
+
+    removeFile(file){
+      this.delList.push(file.uid)
+    },
+
+    async deleteFile(){
+      const t = this
+      for(let i of t.delList){
+        const res = await deleteFile(i)
+        if(res.data.code == 100){
+          console.log('文件删除成功')
+        }else{
+          t.$message.error(res.data.msg)
+        }
+      }
+    },
+
     confirmSend(status){
       this.$refs.ruleForm.validate(valid => {
         if (valid) {
           this.form.acceptingUnitIds = []
           this.form.peerRecipientIds = []
+          this.form.attachments = []
           const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
+          if(aList.includes(null)){
+            this.$message.error('选择接收单位时存在无用户的单位')
+            return
+          }
           const newAList = [].concat(...aList)
           for(let i of newAList){
             const {realName,...data} = i
@@ -347,11 +447,24 @@ export default {
             const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
             this.form.acceptingUnitIds.push(obj)
           }
-          const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
-          for(let i of bList){
-            const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
-            const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
-            this.form.peerRecipientIds.push(obj)
+          if(this.form.recipient.length>0){
+            const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
+            for(let i of bList){
+              const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
+              const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
+              this.form.peerRecipientIds.push(obj)
+            }
+          }
+          if(this.fileList.length == 0){
+            this.form.attachments = []
+          }else{
+            this.form.attachments = this.fileList.map((i)=>{
+              if(i.response){
+                return i.response.data.id
+              }else{
+                return i.uid
+              }
+            })
           }
           if(status == 2 || status == 3){
             const {receiver,recipient,reviewId,...data} = this.form
@@ -359,31 +472,56 @@ export default {
             postReview(data).then( res =>{
               if(res.data.code == 100){
                 this.$message.success('审核已提交')
-                this.$emit('refresh')
-                this.visible = false
+                this.deleteFile()
               }else{
                 this.$message.error(res.data.msg)
               }
+              this.visible = false
+              this.$emit('refresh')
               this.$refs.ruleForm.clearValidate()
               this.$refs.ruleForm.resetFields()
+              this.delList = []
+              this.fileList = []
             })
           }else{
             const {receiver,recipient,id,...data} = this.form
             msgSend(data).then( res =>{
               if(res.data.code == 100){
                 this.$message.success('信息已提交审核')
+                this.deleteFile()
               }else{
                 this.$message.error(res.data.msg)
               }
-              this.$emit('refresh')
               this.visible = false
+              this.$emit('refresh')
               this.$refs.ruleForm.clearValidate()
               this.$refs.ruleForm.resetFields()
+              this.delList = []
+              this.fileList = []
             })
           }
         }else{
           console.log('error submit!!');
           return false;
+        }
+      })
+    },
+
+    downloadFile(file){
+      const t = this
+      const { baseUrl } = require('../../../../config/env.' + process.env.NODE_ENV)
+      axios.get(baseUrl + file.url,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+        if (res) {
+          const link = document.createElement('a')
+          let blob = new Blob([res.data],{type: res.data.type})
+          link.style.display = "none";
+          link.href = URL.createObjectURL(blob); // 创建URL
+          link.setAttribute("download", file.name);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          this.$message.error('获取文件失败')
         }
       })
     },
@@ -432,6 +570,7 @@ export default {
     userTitTree(treeData) {
       for(const node of treeData){
         if(node.users){
+          node.users = node.users.filter(i=>i.roleId == 3)
           node.users = node.users.map((i)=>{
             return{
               ...i,
@@ -439,7 +578,7 @@ export default {
               districtId: node.id
             }
           })
-          node.name = node.name + '('+node.users.map(i=>i.name +' '+ i.phone).join(',')+')'
+          node.name = node.name + '('+node.users.map(i=>i.realName +' '+ i.phone).join(',')+')'
         }
         if(node.children){
           this.userTitTree(node.children)

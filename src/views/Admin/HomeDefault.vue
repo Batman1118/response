@@ -6,8 +6,8 @@
         <div class="content-left">
           <img src="./../../assets/user.png" alt="">
           <div class="user">
-            <h2>{{ dateTime}}，{{userName}}，欢迎使用自治区自然灾害综合风险预警发布及响应联动系统</h2>
-            <p>自治区预警中心干部  工作人员</p>
+            <h2>{{ dateTime}}，{{userInfo.realName}}，欢迎使用自治区自然灾害综合风险预警发布及响应联动系统</h2>
+            <p>{{userInfo.company}}  {{userInfo.role.roleName}}</p>
           </div>
         </div>
         <div class="content-right">
@@ -29,9 +29,12 @@
       </div>
     </div>
     <div class="home-default-content">
-      <div class="left">
+      <div class="left" v-if="userInfo.role.id == 1 || userInfo.role.id == 3">
         <Projecting />
         <Dynamic style="margin-top: 20px"/>
+      </div>
+      <div class="left" v-if="userInfo.role.id == 2">
+        <Review />
       </div>
       <div class="right">
         <QuickNavigation />
@@ -45,27 +48,30 @@
 <script>
 import Projecting from '@/components/Home/Projecting'
 import Dynamic from '@/components/Home/Dynamic'
+import Review from '@/components/Home/Review'
 import QuickNavigation from '@/components/Home/QuickNavigation'
 import IndexEcharts from '@/components/Home/IndexEcharts'
 import Team from '@/components/Home/Team'
 import Cookies from "js-cookie";
+import {getUserInfo} from "@/util/storage";
 
 export default {
   name: 'home-default',
   components: {
     Projecting,
     Dynamic,
+    Review,
     QuickNavigation,
     IndexEcharts,
     Team
   },
   data() {
     return {
-      userName: ''
+      userInfo: getUserInfo()
     };
   },
   created() {
-    this.userName = JSON.parse(Cookies.get('userInfo')).realName
+
   },
   computed: {
     dateTime () {

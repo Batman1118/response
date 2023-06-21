@@ -36,25 +36,23 @@ http.interceptors.response.use(
     (response) => {
         // 对响应数据做点什么
         if (response.data.code && response.data.code === 401) {
-            message.error('用户不存在');
-            loginOut()
-                .then(() => {
-                    Session.clear();
-                    window.location.href = '/';
-                });
-            // useLoginApi()
-            //     .signOut()
-            //     .then(() => {
-            //         Session.clear();
-            //         window.location.href = '/';
-            //     });
+            // message.error('用户不存在')
+            setTimeout(()=>{
+                loginOut()
+                    .then(() => {
+                        Session.clear();
+                        window.location.href = '/';
+                    });
+            },2000)
         } else if (response.data.code && response.data.code === 405) {
-            message.error('token失效');
+            message.error('token失效')
+            setTimeout(()=>{
             loginOut()
                 .then(() => {
                     Session.clear();
                     window.location.href = '/';
                 });
+            },2000)
         }
         return Promise.resolve(response);
     },

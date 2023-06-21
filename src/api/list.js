@@ -62,5 +62,10 @@ export function getResponseById(data){
     })
 }
 
-
-
+// 删除文件
+export function deleteFile(id){
+    return request({
+        url: '/attachment/delete/' + id,
+        method: 'get'
+    })
+}

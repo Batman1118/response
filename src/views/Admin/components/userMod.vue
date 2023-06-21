@@ -81,7 +81,7 @@
 
 <script>
 import {addUser, updateUser} from '@/api/user'
-import {verifyPasswordPowerful, verifyPhone} from "@/util/validate";
+import {verifyPasswordPowerful, verifyPhone, verifySimplePhone} from "@/util/validate";
 export default {
   name: 'userMod',
   props: ['unitType'],
@@ -101,7 +101,7 @@ export default {
       if(value === ''){
         callback(new Error('请输入手机号'))
       }else{
-        if(!verifyPhone(value)){
+        if(!verifySimplePhone(value)){
           callback(new Error('手机号格式有误'))
         }else{
           callback()

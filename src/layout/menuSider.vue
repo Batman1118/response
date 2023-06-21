@@ -21,14 +21,27 @@
 </template>
 
 <script>
-import menuData from './menu'
+import menu from './menu'
+import { getUserInfo } from "@/util/storage";
 export default {
   name: "menu-sider",
   data() {
     return {
-      navData: menuData,
+      userInfo: {},
+      navData: [],
       openKeys: ['1','2','3','4']
     };
+  },
+  created() {
+    const t = this
+    t.userInfo = getUserInfo()
+    if(t.userInfo.role.id == 1){
+      t.navData = menu.adminMenu
+    }else if(t.userInfo.role.id == 3){
+      t.navData = menu.workerMenu
+    }else{
+      t.navData = menu.leaderMenu
+    }
   },
   methods: {
     onOpenChange(openKeys) {

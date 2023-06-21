@@ -38,7 +38,7 @@
     </a-row>
 		<!-- 表格实体部分-->
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination">
+      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
         <template #index="text,record,index">
           {{index + 1}}
         </template>
@@ -53,8 +53,11 @@
             {{ getLevelName(text) }}
           </a-tag>
         </template>
-        <template #attachment="text">
-          <a><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        <template #attachment="attachment">
+          <span v-if="attachment===null|| attachment===[]">无</span>
+          <div v-else>
+            <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
+          </div>
         </template >
         <template #responseStatus="text">
           <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
@@ -75,11 +78,12 @@
         <template #operation="text, record, index">
           <a-button type="primary" v-if="record.responseStatus == 1" style="margin-right: 12px" @click="confirmResponce(record.id)">确认已收到</a-button>
           <a-button type="primary" @click="openMod('repost',record)">转发</a-button>
-          <a-button type="link" @click="openMod('view',record)">查看详情</a-button>
+          <a-button type="link" @click="openDetails(record,record.warnInfoId)">查看详情</a-button>
         </template>
       </a-table>
     </div>
     <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+    <msg-detail-mod ref="msgDetail"></msg-detail-mod>
 		<!-- 对话框 -->
 <!--		<a-modal title="回执" -->
 <!--		okText="确认已安排部署"-->
@@ -94,14 +98,19 @@
 <script>
 import {getMsgRecord, readById, responseMsg} from "@/api/list";
 import msgEditMod from "@/views/Admin/components/msgEditMod";
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
 import {publishMsg} from "@/api/send";
 import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
+import axios from "axios";
+import Cookies from "js-cookie";
+import {getUserInfo} from "@/util/storage";
 
   export default {
     name: 'list',
-    components: { msgEditMod },
+    components: { msgEditMod, msgDetailMod },
 		data() {
 			return {
+        userInfo: getUserInfo(),
         search:{
           pageIndex: 1,
           pageSize: 10,
@@ -116,7 +125,6 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           {
             title: '序号',
             dataIndex: 'index',
-            width: '5%',
             scopedSlots: {
               customRender: 'index'
             },
@@ -124,7 +132,6 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           {
             title: '发布时间',
             dataIndex: 'publishingTime',
-            width: '15%',
             scopedSlots: {
               customRender: 'publishingTime'
             }, //设置定制化表格数据
@@ -132,12 +139,10 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           {
             title: '发布单位',
             dataIndex: 'publishingUnit',
-            width: '12%',
           },
           {
             title: '灾种',
             dataIndex: 'disasterType',
-            width: '8%',
             scopedSlots: {
               customRender: 'disasterType'
             }
@@ -148,17 +153,15 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
             scopedSlots: {
               customRender: 'warningLevel'
             }, //设置定制化表格数据
-            width: '8%',
           },
           {
             title: '信息标题',
             dataIndex: 'title',
-            width: '16%',
           },
           {
             title: '附件',
             dataIndex: 'attachment',
-            width: '6%',
+            width: '15%',
             scopedSlots: {
               customRender: 'attachment'
             },
@@ -166,7 +169,6 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           {
             title: '叫应状态',
             dataIndex: 'responseStatus',
-            width: '10%',
             scopedSlots: {
               customRender: 'responseStatus'
             }, //设置定制化表格数据
@@ -174,6 +176,7 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           {
             title: '操作',
             dataIndex: 'operation',
+            width: '15%',
             scopedSlots: {
               customRender: 'operation'
             },
@@ -211,8 +214,16 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
         ]
 			};
 		},
+    mounted() {
+      if(this.userInfo.role.id == 1){
+        this.columns = this.columns.filter(i=>i.dataIndex !== 'operation')
+      }
+    },
     created() {
       const t = this
+      if(t.$route.query){
+        t.search.searchParams.responseStatus = t.$route.query.type
+      }
       t.getData()
     },
     methods: {
@@ -242,6 +253,25 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
         }
       },
 
+      viewFile(item){
+        const t = this
+        const { baseUrl } = require('../../../config/env.' + process.env.NODE_ENV)
+        axios.get(baseUrl + item.attachment,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+          if (res) {
+            const link = document.createElement('a')
+            let blob = new Blob([res.data],{type: res.data.type})
+            link.style.display = "none";
+            link.href = URL.createObjectURL(blob); // 创建URL
+            link.setAttribute("download", item.attachmentName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            this.$message.error('获取文件失败')
+          }
+        })
+      },
+
       resetSearch(){
         const t = this
         t.search = {
@@ -265,14 +295,15 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
           cancelText: '取消',
           okText: '确认',
           centered: true,
-          async onOk() {
-            let res = await responseMsg(id)
-            if(res.data.code == 100){
-              t.$message.success('信息叫应成功');
-              t.getData()
-            }else{
-              t.$message.warning(res.data.msg);
-            }
+          onOk() {
+            responseMsg(id).then(res=>{
+              if(res.data.code == 100){
+                t.$message.success('信息叫应成功');
+                t.getData()
+              }else{
+                t.$message.warning(res.data.msg);
+              }
+            })
           },
           onCancel() {
             console.log('Cancel');
@@ -285,7 +316,6 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
         getReviewDetailByWorker(data.warnInfoId).then(res=>{
           if(res.data.code == 100){
             if(res.data.data){
-              t.read(data.id)
               t.$refs.msgEdit.openMod(type,res.data.data)
             }else{
               t.$message.error('查询信息详情失败')
@@ -296,11 +326,19 @@ import {getReviewDetail, getReviewDetailByWorker} from "@/api/review";
         })
       },
 
+      openDetails(data,id){
+        const t = this
+        t.read(data.id)
+        t.$refs.msgDetail.getDetails(id)
+        t.$refs.msgDetail.visible = true
+      },
+
       async read(id){
         const t = this
         const res = await readById(id)
         if(res.data.code == 100){
           console.log('已读')
+          t.getData()
         }else{
           t.$message.error('设置已读出错')
         }

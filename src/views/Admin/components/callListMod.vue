@@ -23,6 +23,11 @@
           {{ unittype==1?'省级':unittype==2?'地（市、州）级':unittype==3?'区县级':unittype==4?'村（乡、镇）级':'管理员' }}
         </a-tag>
       </template >
+      <template #responseStatus="text">
+        <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
+          {{text == 1 ? '待叫应' : text == 2 ?'已叫应':text == 3 ?'超时未叫应' : ''}}
+        </a-tag>
+      </template>
     </a-table>
   </a-modal>
 </template>
@@ -62,18 +67,12 @@ export default {
         {
           title: '接收人单位',
           dataIndex: 'receiveUnit',
-          width: '20%',
-          scopedSlots: {
-            customRender: 'receiveUnit'
-          }
+          width: '20%'
         },
         {
           title: '接收人',
           dataIndex: 'recipienterName',
-          width: '20%',
-          scopedSlots: {
-            customRender: 'recipienterName'
-          }
+          width: '20%'
         },
         {
           title: '级别',
@@ -84,11 +83,11 @@ export default {
           },
         },
         {
-          title: '叫应时间',
-          dataIndex: 'responseTime',
+          title: '叫应状态',
+          dataIndex: 'responseStatus',
           width: '15%',
           scopedSlots: {
-            customRender: 'responseTime'
+            customRender: 'responseStatus'
           } //设置定制化表格数据
         }
       ]

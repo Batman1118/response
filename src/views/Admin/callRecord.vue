@@ -36,7 +36,7 @@
 
     <!-- 表格实体部分-->
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination">
+      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
         <template #index="text,record,index">
           {{ index + 1 }}
         </template>
@@ -53,18 +53,18 @@
           </a-tag>
         </template >
         <template #operation="text, record, index">
-<!--          <a-button type="primary">叫应列表</a-button>-->
-          <a-button type="link" @click="openMod('view',record)">查看详情</a-button>
+          <a-button type="link" @click="openDetails(record.warnInfoId)">查看详情</a-button>
         </template>
       </a-table>
-      <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+      <msg-detail-mod ref="msgDetail"></msg-detail-mod>
     </div>
   </div>
 </template>
 <script>
 import {getHistoryRecord, getMsgRecord, getPublishRecord, getResponseRecord} from "@/api/list";
-import msgEditMod from "@/views/Admin/components/msgEditMod";
-import {getReviewDetailByWorker} from "@/api/review";
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
+import {getUserInfo} from "@/util/storage";
+
 const columns = [{
   title: '序号',
   dataIndex: 'index',
@@ -128,7 +128,7 @@ const columns = [{
 ];
 export default {
   name: 'release',
-  components: { msgEditMod },
+  components: { msgDetailMod },
   data() {
     return {
       search:{
@@ -170,6 +170,11 @@ export default {
       ]
     }
   },
+  mounted() {
+    if(getUserInfo().role.id == 1){
+      this.columns = this.columns.filter(i=>i.dataIndex !== 'operation')
+    }
+  },
   created() {
     const t = this
     t.getData()
@@ -186,19 +191,10 @@ export default {
       }
     },
 
-    openMod(type,data){
+    openDetails(id){
       const t = this
-      getReviewDetailByWorker(data.warnInfoId).then(res=>{
-        if(res.data.code == 100){
-          if(res.data.data){
-            t.$refs.msgEdit.openMod(type,res.data.data)
-          }else{
-            t.$message.error('查询信息详情失败')
-          }
-        }else{
-          this.$message.error(res.data.msg)
-        }
-      })
+      t.$refs.msgDetail.getDetails(id)
+      t.$refs.msgDetail.visible = true
     },
 
     onPageChange(page, pageSize) {

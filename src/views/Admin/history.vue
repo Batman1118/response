@@ -54,8 +54,11 @@
             {{ getLevelName(text) }}
           </a-tag>
         </template>
-        <template #attachment="text">
-          <a><b><a-icon type="paper-clip" /></b></a>
+        <template #attachment="attachment">
+          <span v-if="attachment===null|| attachment.length == 0">无</span>
+          <div v-else>
+            <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
+          </div>
         </template >
         <template #responseSituation="text">
           <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
@@ -64,19 +67,22 @@
         </template>
         <template #operation="text, record, index">
           <a-button type="primary" @click="openList(record.id)">叫应列表</a-button>
-          <a-button type="link" @click="openMod('view',record)">查看详情</a-button>
+          <a-button type="link" @click="openDetails(record.id)">查看详情</a-button>
         </template>
       </a-table>
-      <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+      <msg-detail-mod ref="msgDetail"></msg-detail-mod>
       <call-list-mod ref="callList" @refresh="getData"></call-list-mod>
     </div>
   </div>
 </template>
 <script>
 import {getHistoryRecord, getMsgRecord, getPublishRecord} from "@/api/list";
-import msgEditMod from "@/views/Admin/components/msgEditMod";
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
 import callListMod from "@/views/Admin/components/callListMod";
 import {getReviewDetailByWorker} from "@/api/review";
+import axios from "axios";
+import Cookies from "js-cookie";
+import {getUserInfo} from "@/util/storage";
 const columns = [{
   title: '序号',
   dataIndex: 'index',
@@ -122,7 +128,7 @@ const columns = [{
   {
     title: '附件',
     dataIndex: 'attachment',
-    width: '6%',
+    width: '15%',
     scopedSlots: {
       customRender: 'attachment'
     },
@@ -145,7 +151,7 @@ const columns = [{
 ];
 export default {
   name: 'release',
-  components: { msgEditMod, callListMod },
+  components: { msgDetailMod, callListMod },
   data() {
     return {
       search:{
@@ -187,6 +193,11 @@ export default {
       ]
     }
   },
+  mounted() {
+    if(getUserInfo().role.id == 1){
+      this.columns = this.columns.filter(i=>i.dataIndex !== 'operation')
+    }
+  },
   created() {
     const t = this
     t.getData()
@@ -208,19 +219,10 @@ export default {
       t.$refs.callList.openMod(id)
     },
 
-    openMod(type,data){
+    openDetails(id){
       const t = this
-      getReviewDetailByWorker(data.id).then(res=>{
-        if(res.data.code == 100){
-          if(res.data.data){
-            t.$refs.msgEdit.openMod(type,res.data.data)
-          }else{
-            t.$message.error('查询信息详情失败')
-          }
-        }else{
-          this.$message.error(res.data.msg)
-        }
-      })
+      t.$refs.msgDetail.getDetails(id)
+      t.$refs.msgDetail.visible = true
     },
 
     onPageChange(page, pageSize) {
@@ -236,6 +238,25 @@ export default {
         t.search.searchParams.startTime = value[0].format('YYYY-MM-DD 00:00:00')
         t.search.searchParams.endTime = value[1].format('YYYY-MM-DD 23:59:59')
       }
+    },
+
+    viewFile(item){
+      const t = this
+      const { baseUrl } = require('../../../config/env.' + process.env.NODE_ENV)
+      axios.get(baseUrl + item.attachment,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+        if (res) {
+          const link = document.createElement('a')
+          let blob = new Blob([res.data],{type: res.data.type})
+          link.style.display = "none";
+          link.href = URL.createObjectURL(blob); // 创建URL
+          link.setAttribute("download", item.attachmentName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          this.$message.error('获取文件失败')
+        }
+      })
     },
 
     timeOk(value) {

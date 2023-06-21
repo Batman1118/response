@@ -41,12 +41,6 @@ const routes = [
 	    component: () => import('@/views/Admin/list'),
 	  },
 	  {
-	    path: '/details',
-	    name: 'detail',
-	    meta: { title: '信息详情' },
-	    component: () => import('@/views/Admin/Details'),
-	  },
-	  {
 	    path: '/audit',
 	    name: 'audit',
 	    meta: { title: '数据统计' },
@@ -60,7 +54,7 @@ const routes = [
       },
 		{
 			path: '/msgReview',
-			name: '/msgReview',
+			name: 'msgReview',
 			meta: { title: '信息审核' },
 			component: () => import('@/views/Admin/msgReview'),
 		},

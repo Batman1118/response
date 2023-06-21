@@ -45,9 +45,11 @@
         <template #disasterType="text">
           {{ getRiskName(text) }}
         </template>
-        <template #attachment="text">
-          <span v-if="text==='无'">无</span>
-          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        <template #attachment="attachment">
+          <span v-if="attachment===null|| attachment===[]">无</span>
+          <div v-else>
+            <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
+          </div>
         </template >
         <template #reviewStatus="reviewStatus">
           <a-tag
@@ -58,7 +60,7 @@
         </template>
         <template #operation="text, record, index">
           <a-button type="primary" v-if="record.reviewStatus == 2" @click="confirmPost(record.id)">确认发布</a-button>
-          <a-button type="link" v-if="record.reviewStatus == 2 || record.reviewStatus == 3" @click="openMod('view',record)">查看信息详情</a-button>
+          <a-button type="link" @click="openMod('view',record)">查看信息详情</a-button>
           <a-button class="del" type="link" @click="delData(record.id)">删除</a-button>
         </template>
       </a-table>
@@ -73,6 +75,9 @@ import {getReviewDetail, getReviewRecord} from "@/api/review";
 import msgEditMod from '@/views/Admin/components/msgEditMod'
 import {delRecipient} from "@/api/user";
 import {deleteMsg, publishMsg} from "@/api/send";
+import Cookies from "js-cookie";
+import axios from "axios";
+import {getUserInfo} from "@/util/storage";
 
 export default {
   name: 'msgReview',
@@ -143,6 +148,7 @@ export default {
           scopedSlots: {
             customRender: 'attachment'
           },
+          width: '15%'
         },
         {
           title: '审核情况',
@@ -160,6 +166,11 @@ export default {
         },
       ],
       data: []
+    }
+  },
+  mounted() {
+    if(getUserInfo().role.id == 1){
+      this.columns = this.columns.filter(i=>i.dataIndex !== 'operation')
     }
   },
   created() {
@@ -209,14 +220,15 @@ export default {
         cancelText: '取消',
         okText: '确认',
         centered: true,
-        async onOk() {
-          let res = await publishMsg(id)
-          if(res.data.code == 100){
-            t.$message.success('信息发布成功');
-            t.getData()
-          }else{
-            t.$message.warning(res.data.msg);
-          }
+        onOk() {
+          publishMsg(id).then(res=>{
+            if(res.data.code == 100){
+              t.$message.success('信息发布成功');
+              t.getData()
+            }else{
+              t.$message.warning(res.data.msg);
+            }
+          })
         },
         onCancel() {
           console.log('Cancel');
@@ -232,19 +244,39 @@ export default {
         cancelText: '取消',
         okText: '确认',
         centered: true,
-        async onOk() {
-          let res = await deleteMsg(id)
-          if(res.data.code == 100){
-            t.$message.success('信息删除成功');
-            t.getData()
-          }else{
-            t.$message.warning(res.data.msg);
-          }
+        onOk() {
+          deleteMsg(id).then(res=>{
+            if(res.data.code == 100){
+              t.$message.success('信息删除成功');
+              t.getData()
+            }else{
+              t.$message.warning(res.data.msg);
+            }
+          })
         },
         onCancel() {
           console.log('Cancel');
         },
       });
+    },
+
+    viewFile(item){
+      const t = this
+      const { baseUrl } = require('../../../config/env.' + process.env.NODE_ENV)
+      axios.get(baseUrl + item.attachment,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+        if (res) {
+          const link = document.createElement('a')
+          let blob = new Blob([res.data],{type: res.data.type})
+          link.style.display = "none";
+          link.href = URL.createObjectURL(blob); // 创建URL
+          link.setAttribute("download", item.attachmentName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          this.$message.error('获取文件失败')
+        }
+      })
     },
 
     openMod(type,data){

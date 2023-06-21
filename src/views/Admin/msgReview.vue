@@ -38,16 +38,18 @@
     </a-row>
 
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="data" bordered :rowKey="record=>record.id">
+      <a-table :columns="columns" :data-source="data" bordered :rowKey="record=>record.id" :pagination="pagination">
         <template #index="text,record,index">
           {{ index+1 }}
         </template>
         <template #disasterType="text">
           {{ getRiskName(text) }}
         </template>
-        <template #attachment="text">
-          <span v-if="text==='无'">无</span>
-          <a v-else><b><a-icon type="paper-clip" /> {{text}}</b></a>
+        <template #attachment="attachment">
+          <span v-if="attachment===null|| attachment===[]">无</span>
+          <div v-else>
+            <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
+          </div>
         </template >
         <template #reviewStatus="reviewStatus">
           <a-tag
@@ -57,12 +59,13 @@
           </a-tag>
         </template>
         <template #operation="text, record, index">
-          <a-button type="link" v-if="record.reviewStatus == 2 || record.reviewStatus == 3" @click="openMod('view',record)">查看信息详情</a-button>
+          <a-button type="link" v-if="record.reviewStatus == 2 || record.reviewStatus == 3" @click="openDetails(record.id)">查看信息详情</a-button>
           <a-button type="primary" v-if="record.reviewStatus == 1" @click="openMod('review',record)">查看并审核</a-button>
         </template>
       </a-table>
     </div>
     <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+    <msg-detail-mod ref="msgDetail"></msg-detail-mod>
   </div>
 </template>
 
@@ -70,12 +73,17 @@
 
 import {getReviewDetail, getReviewRecord} from "@/api/review";
 import msgEditMod from '@/views/Admin/components/msgEditMod'
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
+import axios from "axios";
+import Cookies from "js-cookie";
+import {getUserInfo} from "@/util/storage";
 
 export default {
   name: 'msgReview',
-  components: { msgEditMod },
+  components: { msgEditMod, msgDetailMod },
   data () {
     return {
+      userInfo: getUserInfo(),
       search:{
         pageIndex: 1,
         pageSize: 10,
@@ -94,6 +102,14 @@ export default {
         {name: '水旱',value: 5},
         {name: '森林草原火灾',value: 6}
       ],
+      pagination: {
+        current: 1,
+        defaultCurrent: 1,
+        defaultPageSize: 10,
+        total: 0,
+        onChange: ( page, pageSize ) => this.onPageChange(page,pageSize),
+        showTotal: total => `共 ${total} 条`
+      },
       columns: [
         {
           title: '序号',
@@ -132,6 +148,7 @@ export default {
           scopedSlots: {
             customRender: 'attachment'
           },
+          width: '15%'
         },
         {
           title: '审核情况',
@@ -151,8 +168,16 @@ export default {
       data: []
     }
   },
+  mounted() {
+    if(getUserInfo().role.id == 1){
+      this.columns = this.columns.filter(i=>i.dataIndex !== 'operation')
+    }
+  },
   created() {
     const t = this
+    if(t.$route.query){
+      t.search.searchParams.reviewStatus = t.$route.query.type
+    }
     t.getData()
   },
   methods:{
@@ -190,6 +215,32 @@ export default {
       }
     },
 
+    onPageChange(page, pageSize) {
+      const t= this
+      t.pagination.current = page
+      t.search.pageIndex = page
+      t.getData()
+    },
+
+    viewFile(item){
+      const t = this
+      const { baseUrl } = require('../../../config/env.' + process.env.NODE_ENV)
+      axios.get(baseUrl + item.attachment,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+        if (res) {
+          const link = document.createElement('a')
+          let blob = new Blob([res.data],{type: res.data.type})
+          link.style.display = "none";
+          link.href = URL.createObjectURL(blob); // 创建URL
+          link.setAttribute("download", item.attachmentName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } else {
+          this.$message.error('获取文件失败')
+        }
+      })
+    },
+
     openMod(type,data){
       const t = this
       getReviewDetail(data.id).then(res=>{
@@ -199,6 +250,12 @@ export default {
           this.$message.error(res.data.msg)
         }
       })
+    },
+
+    openDetails(id){
+      const t = this
+      t.$refs.msgDetail.getDetails(id)
+      t.$refs.msgDetail.visible = true
     },
 
     onOk(value) {

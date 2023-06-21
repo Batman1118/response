@@ -42,54 +42,31 @@
         </a-card>
       </div>
     </div>
-    <a-pagination v-model="search.pageIndex" :total="total" :show-total="total => `共 ${total} 条数据`" show-less-items/>
-    <a-modal v-model="visible" width="40%" title="短信详情" @ok="handleOk" cancelText="取消" okText="确认" centered>
-      <div class="detail-mod">
-        <a-row :gutter="24"><a-col :span="4" style="text-align: right">{{ details.emergType == 1?'紧急':details.emergType == 2?'常规':'' }}</a-col></a-row>
-        <a-row :gutter="24"><a-col :span="4" style="text-align: right">发送时间</a-col><a-col :span="14" style="border: 1px solid #d9d9d9;padding: 5px 10px !important;">{{details.gmtCreate}}</a-col></a-row>
-        <a-row :gutter="24"><a-col :span="4" style="text-align: right">灾种类型</a-col><a-col :span="14" style="border: 1px solid #d9d9d9;padding: 5px 10px !important;">{{ getRiskName(details.disasterType)}}</a-col></a-row>
-        <a-row :gutter="24"><a-col :span="4" style="text-align: right">预警级别</a-col><a-col :span="14" style="border: 1px solid #d9d9d9;padding: 5px 10px !important;">{{ getLevelName(details.warningLevel)}}</a-col></a-row>
-        <a-row :gutter="24"><a-col :span="4" style="text-align: right">信息内容</a-col><a-col :span="14" style="border: 1px solid #d9d9d9;padding: 5px 10px !important;">{{details.content}}</a-col></a-row>
-        <a-row :gutter="24">
-          <a-col :span="4" style="text-align: right">接收人</a-col>
-          <a-col :span="20" style="border: 1px solid #d9d9d9;padding: 0 !important;">
-            <div v-for="(item,index) in details.recipients" :key="index" class="table">
-            <div style="width: 20%">
-              {{item.name}}
-            </div>
-            <div style="width: 20%">
-              {{item.phone}}
-            </div>
-            <div style="width: 60%">
-              {{item.recipientUnit}}
-            </div>
-            </div>
-          </a-col>
-        </a-row>
-      </div>
-    </a-modal>
+    <a-pagination class="pageItem" v-model="search.pageIndex" :total="total" :defaultPageSize="search.pageSize" @change="onPageChange" :show-total="total => `共 ${total} 条数据`"/>
+    <msg-detail-mod ref="msgDetail"></msg-detail-mod>
   </div>
 </template>
 
 <script>
 import {getUser} from '@/api/user'
 import {getMassRecord} from "@/api/send";
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
 
 export default {
   name: 'msgRecord',
-  components: {},
+  components: {msgDetailMod},
   data () {
     return {
       search:{
         pageIndex: 1,
-        pageSize: 10,
+        pageSize: 5,
         searchParams:{
           startTime: '',
           endTime: ''
         }
       },
       timeRange: [],
-      total: 0,
+      total: null,
       msg: [],
       visible: false,
       details: {},
@@ -119,7 +96,7 @@ export default {
       const res = await getMassRecord(this.search)
       if(res.data.code == 200){
         t.msg = res.data.data
-        t.pagination.total = res.data.total
+        t.total = res.data.total
       }else{
         this.$message.error(res.data.msg)
       }
@@ -139,6 +116,12 @@ export default {
       t.getData()
     },
 
+    onPageChange(page, pageSize) {
+      const t= this
+      t.search.pageIndex = page
+      t.getData()
+    },
+
     timeChange(value, dateString) {
       const t = this
       if(dateString){
@@ -151,8 +134,8 @@ export default {
     },
     viewDetails(item){
       const t = this
-      t.details = item
-      t.visible = true
+      t.$refs.msgDetail.details = item
+      t.$refs.msgDetail.visible = true
     },
 
     getRiskName(disasterType){
@@ -203,29 +186,6 @@ export default {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-        }
-      }
-    }
-  }
-}
-.detail-mod{
-  font-size: 16px;
-
-  .ant-row{
-    margin-bottom: 24px;
-
-    .table{
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid @blackBorder;
-      &:last-of-type{
-        border-bottom: none;
-      }
-      &>div{
-        border-right: 1px solid @blackBorder;
-        padding: 5px 10px;
-        &:last-of-type{
-          border-right: none;
         }
       }
     }

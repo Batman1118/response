@@ -57,7 +57,7 @@
 		name: "Home",
 		data() {
 			return {
-        userInfo: {},
+        userInfo: getUserInfo(),
 				collapsed: false, //返回logo图片或表述
 				pageList: [],
 				activePage: '',
@@ -70,8 +70,6 @@
       pwdMod
 		},
 		created() {
-      this.userInfo = getUserInfo()
-      // this.getDistrictInfo()
 			const route = this.$route
 			if (this.pageList.findIndex(item => item.path === route.path) === -1) {
 				this.pageList.push(this.createPage(route))
@@ -122,16 +120,17 @@
           cancelText: '取消',
           okText: '确认',
           centered: true,
-          async onOk() {
-            const res = await loginOut()
-            if (res.data.code === 100) {
-              Session.clear(); // 清除缓存/token等
-              // 使用 reload 时，不需要调用 resetRoute() 重置路由
-              t.$router.push('/')
-              // window.location.reload();
-            } else {
-              this.$message.warning(res.data.msg);
-            }
+          onOk() {
+            loginOut().then(res=>{
+              if (res.data.code === 100) {
+                Session.clear(); // 清除缓存/token等
+                // 使用 reload 时，不需要调用 resetRoute() 重置路由
+                t.$router.push('/')
+                // window.location.reload();
+              } else {
+                this.$message.warning(res.data.msg);
+              }
+            })
           },
           onCancel() {
             console.log('Cancel');

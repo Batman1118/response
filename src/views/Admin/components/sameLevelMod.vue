@@ -132,7 +132,6 @@ export default {
         if (valid) {
           if(this.title == '新增用户'){
             const { id,...data } = this.form
-            console.log(data,'data')
             addRecipient(data).then((res)=>{
               if(res.data.code == 100){
                 this.$message.success('新增平级接收人成功')
