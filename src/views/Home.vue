@@ -31,7 +31,9 @@
           margin: '15px 16px 24px 16px',
         }">
 					<!-- Content -->
-					<router-view ref="tabContent"></router-view>
+          <keep-alive include="notice">
+					  <router-view ref="tabContent"></router-view>
+          </keep-alive>
 					<div style="height: 30px;text-align: center;line-height: 30px">
             技术支持：中国科学院
           </div>

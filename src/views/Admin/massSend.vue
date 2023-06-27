@@ -107,7 +107,7 @@
           <a-form-model-item>
             <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
               <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
-                {{ item.recipientName }}
+                {{ item.recipientName }}({{item.company}} {{item.phone}})
               </a-select-option>
             </a-select>
           </a-form-model-item>
@@ -140,7 +140,7 @@
 			<h2>短信预览</h2>
 			<div class="mobile">
 				<div class="mesg">
-					<P>{{form.content}}发布单位：{{form.publishingUnit}}</P>
+					<P>【自然灾害风险预警提示】{{form.content}}发布单位：{{form.publishingUnit}}</P>
 				</div>
 
 			</div>
@@ -242,7 +242,6 @@ import {getUserInfo} from "@/util/storage";
             t.userTitTree(res.data.data)
             treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
             t.areaUsers = treeD
-            console.log(t.areaUsers,t.unittype,'696969')
           }else{
             console.log('暂无数据')
           }
@@ -285,7 +284,7 @@ import {getUserInfo} from "@/util/storage";
             }
             const newAList = [].concat(...aList)
             for(let i of newAList){
-              const {realName,id,...data} = i
+              const {realName,id,roleId,...data} = i
               const {company: recipientUnit,...rest} = data
               const obj = {recipientUnit,recipientType:1,...rest}
               this.form.verticalRecipient.push(obj)
@@ -372,10 +371,12 @@ import {getUserInfo} from "@/util/storage";
       traverseTree(treeData) {
         let result = [];
         function traverse(node) {
-          result.push({ label: node.name, value: node.id });
-          if (node.children && node.children.length > 0) {
-            for (let child of node.children) {
-              traverse(child);
+          if(node.users && node.users.length>0){
+            result.push({ label: node.name, value: node.id });
+            if (node.children && node.children.length > 0) {
+              for (let child of node.children) {
+                traverse(child);
+              }
             }
           }
         }

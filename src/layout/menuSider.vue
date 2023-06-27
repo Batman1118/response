@@ -38,7 +38,16 @@ export default {
     if(t.userInfo.role.id == 1){
       t.navData = menu.adminMenu
     }else if(t.userInfo.role.id == 3){
-      t.navData = menu.workerMenu
+      if(t.userInfo.unittype == 1){
+        t.navData = menu.workerMenu
+      }else{
+        t.navData = menu.workerMenu.map((i)=>{
+          if(i.Children.find(item=>item.MenuTitle == '常规群发')){
+            i.Children = i.Children.filter(j=>j.MenuTitle !== '常规群发')
+          }
+          return i
+        })
+      }
     }else{
       t.navData = menu.leaderMenu
     }

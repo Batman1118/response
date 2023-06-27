@@ -1,7 +1,7 @@
 <template>
   <a-card title="近期通知" class="projecting">
     <a slot="extra" href="release" class="tapBtn">全部通知</a>
-    <a-card-grid style="width:33.33%;text-align:center" v-for="(item, index) in lists" :key="'projecting' + index" @click="openDetails(item.id)">
+    <a-card-grid style="width:33.33%;text-align:center;cursor: pointer" v-for="(item, index) in lists" :key="'projecting' + index" @click="openDetails(item.id)">
       <div class="title">
         <img :src="img" :alt="item.title">
         <span>{{ getRiskName(item.disasterType)}} {{getLevelName(item.warningLevel)}}</span>

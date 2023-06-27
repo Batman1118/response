@@ -17,7 +17,7 @@
       </a-col>
     </a-row>
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="tableData" :pagination="pagination" :rowKey="record=>record.name" bordered>
+      <a-table :columns="columns" :data-source="tableData" :pagination="pagination" :rowKey="record=>record.id" bordered>
         <template #unittype="unittype">
           <a-tag
               :color="unittype === 1 ? 'purple' : unittype === 2 ? 'blue' : unittype === 3 ? 'cyan' : 'green'"

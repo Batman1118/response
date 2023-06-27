@@ -279,6 +279,7 @@ export default {
               if(res.data.code == 100){
                 this.$message.success('新增用户成功')
                 this.$emit('refresh')
+                this.visible = false
               }else{
                 this.$message.error(res.data.msg)
               }
@@ -289,12 +290,12 @@ export default {
               if(res.data.code == 100){
                 this.$message.success('修改用户成功')
                 this.$emit('refresh')
+                this.visible = false
               }else{
                 this.$message.error(res.data.msg)
               }
             })
           }
-          this.visible = false
         } else {
           console.log('error submit!!');
           return false;

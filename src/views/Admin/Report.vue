@@ -62,6 +62,7 @@
           <a-button type="primary" v-if="record.reviewStatus == 2" @click="confirmPost(record.id)">确认发布</a-button>
           <a-button type="link" @click="openMod('view',record)">查看信息详情</a-button>
           <a-button class="del" type="link" @click="delData(record.id)">删除</a-button>
+          <a-button v-if="record.reviewStatus == 1 || record.reviewStatus == 3" @click="openMod('edit',record)">修改</a-button>
         </template>
       </a-table>
     </div>
@@ -71,7 +72,7 @@
 
 <script>
 
-import {getReviewDetail, getReviewRecord} from "@/api/review";
+import {getReviewDetail, getReviewDetailByWorker, getReviewRecord} from "@/api/review";
 import msgEditMod from '@/views/Admin/components/msgEditMod'
 import {delRecipient} from "@/api/user";
 import {deleteMsg, publishMsg} from "@/api/send";
@@ -281,13 +282,23 @@ export default {
 
     openMod(type,data){
       const t = this
-      getReviewDetail(data.id).then(res=>{
-        if(res.data.code == 100){
-          t.$refs.msgEdit.openMod(type,res.data.data)
-        }else{
-          this.$message.error(res.data.msg)
-        }
-      })
+      if(type == 'edit'){
+        getReviewDetailByWorker(data.id).then(res=>{
+          if(res.data.code == 100){
+            t.$refs.msgEdit.openMod(type,res.data.data)
+          }else{
+            this.$message.error(res.data.msg)
+          }
+        })
+      }else{
+        getReviewDetail(data.id).then(res=>{
+          if(res.data.code == 100){
+            t.$refs.msgEdit.openMod(type,res.data.data)
+          }else{
+            this.$message.error(res.data.msg)
+          }
+        })
+      }
     },
 
     onPageChange(page, pageSize) {

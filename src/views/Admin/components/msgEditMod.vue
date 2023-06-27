@@ -121,7 +121,7 @@
             <a-form-model-item>
               <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle" :disabled="disable">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
-                  {{ item.recipientName }}
+                  {{ item.recipientName }}({{item.company}} {{item.phone}})
                 </a-select-option>
               </a-select>
             </a-form-model-item>
@@ -137,8 +137,8 @@
             </a-button>
           </a-col>
         </a-row>
-        <a-row :gutter="24" style="display: flex;justify-content: right;align-items: center" v-if="title=='信息转发'">
-          <a-col :span="12">
+        <a-row :gutter="24" style="display: flex;justify-content: right;align-items: center" v-if="title=='信息转发' || title=='信息修改'">
+          <a-col :span="12" v-if="title=='信息转发'">
             <b style="margin-bottom: 6px">选择审批领导：</b>
             <a-form-model-item prop="reviewId">
               <a-select show-search v-model="form.reviewId" placeholder="请选择审批领导">
@@ -146,9 +146,14 @@
               </a-select>
             </a-form-model-item>
           </a-col>
-          <a-col :span="12" style="display: flex;justify-content: right">
+          <a-col :span="12" style="text-align: right" v-if="title=='信息转发'">
             <a-button type="primary" style="min-width: 140px;margin-right: 12px" @click="confirmSend(4)">
               确认转发
+            </a-button>
+          </a-col>
+          <a-col :span="12" style="text-align: right" v-if="title=='信息修改'">
+            <a-button type="primary" style="min-width: 140px;margin-right: 12px" @click="confirmSend(4)" :disabled="userInfo.role.id==1?true:false">
+              确认并提交审核
             </a-button>
           </a-col>
         </a-row>
@@ -170,7 +175,7 @@
 import {getAreaWithUserIfo, getPeerRecipient, getLeaders, delRecipient} from '@/api/user'
 import {getUserInfo} from "@/util/storage";
 import Cookies from "js-cookie";
-import {massSend, msgSend} from "@/api/send";
+import {massSend, msgSend, msgUpdate} from "@/api/send";
 import {postReview} from "@/api/review";
 import axios from "axios";
 import {deleteFile} from "@/api/list";
@@ -265,7 +270,7 @@ export default {
       const t = this
       t.form.acceptingUnitIds = []
       t.form.peerRecipientIds = []
-      if(type == 'review' || type == 'view') {
+      if(type == 'review' || type == 'view' || type == 'edit') {
         for(let i in data){
           if(t.isValidKey(i,t.form)){
             t.form[i] = data[i]
@@ -292,6 +297,9 @@ export default {
         t.form.recipient = data.peerRecipientIds.map(i=>i.recipienterId)
         if(type == 'review'){
           t.title = '信息审核'
+          t.disable = false
+        }else if(type == 'edit'){
+          t.title = '信息修改'
           t.disable = false
         }else{
           t.title = '信息详情'
@@ -351,7 +359,7 @@ export default {
           t.userTitTree(res.data.data)
           // treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
           t.areaUsers = t.findNodeById(res.data.data,t.userInfo.districtId).children
-          t.unittype = this.findNodeById(this.areaUsers,t.userInfo.districtId)?.type
+          t.unittype = t.findNodeById(res.data.data,t.userInfo.districtId)?.type
         }else{
           console.log('暂无数据')
         }
@@ -386,7 +394,7 @@ export default {
       const t = this
       this.checkAll = !this.checkAll
       if(t.checkAll == true){
-        t.form.receiver = t.traverseTree(t.areaUsers[0])
+        t.form.receiver = t.traverseTree(t.areaUsers)
       }else{
         t.form.receiver = []
       }
@@ -476,29 +484,47 @@ export default {
               }else{
                 this.$message.error(res.data.msg)
               }
-              this.visible = false
-              this.$emit('refresh')
               this.$refs.ruleForm.clearValidate()
               this.$refs.ruleForm.resetFields()
               this.delList = []
               this.fileList = []
+              this.visible = false
+              this.$emit('refresh')
             })
           }else{
-            const {receiver,recipient,id,...data} = this.form
-            msgSend(data).then( res =>{
-              if(res.data.code == 100){
-                this.$message.success('信息已提交审核')
-                this.deleteFile()
-              }else{
-                this.$message.error(res.data.msg)
-              }
-              this.visible = false
-              this.$emit('refresh')
-              this.$refs.ruleForm.clearValidate()
-              this.$refs.ruleForm.resetFields()
-              this.delList = []
-              this.fileList = []
-            })
+            if(this.title == '信息转发'){
+              const {receiver,recipient,id,...data} = this.form
+              msgSend(data).then( res =>{
+                if(res.data.code == 100){
+                  this.$message.success('信息已提交审核')
+                  this.deleteFile()
+                }else{
+                  this.$message.error(res.data.msg)
+                }
+                this.$refs.ruleForm.clearValidate()
+                this.$refs.ruleForm.resetFields()
+                this.delList = []
+                this.fileList = []
+                this.visible = false
+                this.$emit('refresh')
+              })
+            }else{
+              const {receiver,recipient,reviewId,...data} = this.form
+              msgUpdate(data).then( res =>{
+                if(res.data.code == 100){
+                  this.$message.success('信息已提交审核')
+                  this.deleteFile()
+                }else{
+                  this.$message.error(res.data.msg)
+                }
+                this.$refs.ruleForm.clearValidate()
+                this.$refs.ruleForm.resetFields()
+                this.delList = []
+                this.fileList = []
+                this.visible = false
+                this.$emit('refresh')
+              })
+            }
           }
         }else{
           console.log('error submit!!');
@@ -554,11 +580,13 @@ export default {
     // 将树状数据所有id和name放入对象数组
     traverseTree(treeData) {
       let result = [];
-      function traverse(node) {
-        result.push({ label: node.name, value: node.id });
-        if (node.children && node.children.length > 0) {
-          for (let child of node.children) {
-            traverse(child);
+      function traverse(data) {
+        for(const node of data){
+          if(node.users && node.users.length>0) {
+            result.push({label: node.name, value: node.id});
+            if (node.children && node.children.length > 0) {
+              traverse(node.children);
+            }
           }
         }
       }
@@ -664,6 +692,26 @@ export default {
           margin: 15px 10px;
         }
       }
+    }
+  }
+}
+
+.ant-radio-button-wrapper-checked {
+  /* 自定义禁用样式 */
+  /* 例如，修改文本颜色和背景颜色 */
+  color: #fff;
+  background-color: #1890ff;
+}
+
+/deep/.ant-select-disabled{
+  color: @blackText;
+
+  .ant-select-selection{
+    background: #fff;
+
+    .ant-select-selection__choice{
+      color: @blackText;
+      background: #fafafa;
     }
   }
 }

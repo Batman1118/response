@@ -10,6 +10,15 @@ export function msgSend(data){
     })
 }
 
+// 信息修改
+export function msgUpdate(data){
+    return request({
+        url: '/warning/info/updateById',
+        method: 'post',
+        data: data
+    })
+}
+
 // 群发信息
 export function massSend(data){
     return request({

@@ -36,7 +36,7 @@
 
     <!-- 表格实体部分-->
     <div class="table-cont">
-      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination">
+      <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
         <template #index="text,record,index">
           {{ index + 1 }}
         </template>

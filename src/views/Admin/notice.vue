@@ -90,7 +90,7 @@
                 全选
               </a-checkbox>
             </div>
-            <a-form-model-item prop="receiver">
+            <a-form-model-item prop="receiver" style="margin-bottom: 12px">
               <a-tree-select
                   show-search
                   tree-checkable
@@ -109,16 +109,24 @@
               >
               </a-tree-select>
             </a-form-model-item>
+            <a-checkbox @change="isAddLeaders" style="margin-bottom: 24px">
+              同时发信息给本级领导
+            </a-checkbox>
           </a-col>
           <a-col :span="12">
             <b style="margin-bottom: 6px">平级接收人选择：</b>
             <a-form-model-item prop="recipient">
               <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
-                  {{ item.recipientName }}
+                  {{ item.recipientName }}({{item.company}} {{item.phone}})
                 </a-select-option>
               </a-select>
             </a-form-model-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="24">
+          <a-col :span="12">
+
           </a-col>
         </a-row>
         <a-row :gutter="24" style="display: flex;align-items: center">
@@ -264,9 +272,9 @@ import {deleteFile} from "@/api/list";
             // const treeD = []
             t.userTitTree(res.data.data)
             // treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
-            console.log(res.data.data)
             t.areaUsers = t.findNodeById(res.data.data,t.userInfo.districtId).children
-            t.unittype = this.findNodeById(this.areaUsers,t.userInfo.districtId)?.type
+            // t.leaders = t.findNodeById(res.data.data,t.userInfo.districtId).users.filter(i=>i.roleId == 2)
+            t.unittype = t.findNodeById(res.data.data,t.userInfo.districtId)?.type
           }else{
             console.log('暂无数据')
           }
@@ -299,12 +307,17 @@ import {deleteFile} from "@/api/list";
       },
       checkChange(e) {
         const t = this
-        this.checkAll = !this.checkAll
+        t.checkAll = !t.checkAll
         if(t.checkAll == true){
-          t.form.receiver = t.traverseTree(t.areaUsers[0])
+          t.form.receiver = t.traverseTree(t.areaUsers)
         }else{
           t.form.receiver = []
         }
+      },
+
+      isAddLeaders(e) {
+        const t = this
+        console.log(`checked = ${e.target.checked}`);
       },
 
       fileChange(info) {
@@ -349,6 +362,7 @@ import {deleteFile} from "@/api/list";
           if (valid) {
             this.form.acceptingUnitIds = []
             this.form.peerRecipientIds = []
+
             const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
             if(aList.includes(null)){
               this.$message.error('选择接收单位时存在无用户的单位')
@@ -361,6 +375,7 @@ import {deleteFile} from "@/api/list";
               const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
               this.form.acceptingUnitIds.push(obj)
             }
+
             if(this.form.recipient.length>0){
               const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
               for(let i of bList){
@@ -410,11 +425,13 @@ import {deleteFile} from "@/api/list";
       // 将树状数据所有id和name放入对象数组
       traverseTree(treeData) {
         let result = [];
-        function traverse(node) {
-          result.push({ label: node.name, value: node.id });
-          if (node.children && node.children.length > 0) {
-            for (let child of node.children) {
-              traverse(child);
+        function traverse(data) {
+          for(const node of data){
+            if(node.users && node.users.length>0) {
+              result.push({label: node.name, value: node.id});
+              if (node.children && node.children.length > 0) {
+                  traverse(node.children);
+              }
             }
           }
         }
