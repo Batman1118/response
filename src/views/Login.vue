@@ -15,7 +15,7 @@
     >
       <a-form-model-item ref="name" prop="name">
         <a-input
-            placeholder="请输入用户"
+            placeholder="请输入用户名"
             size="large"
             v-model="form.name"
             autocomplete="new-password"

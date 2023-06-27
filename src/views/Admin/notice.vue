@@ -90,7 +90,7 @@
                 全选
               </a-checkbox>
             </div>
-            <a-form-model-item prop="receiver" style="margin-bottom: 12px">
+            <a-form-model-item prop="receiver" style="margin-bottom: 6px">
               <a-tree-select
                   show-search
                   tree-checkable
@@ -109,7 +109,7 @@
               >
               </a-tree-select>
             </a-form-model-item>
-            <a-checkbox @change="isAddLeaders" style="margin-bottom: 24px">
+            <a-checkbox :checked="withLeaders" @change="isAddLeaders" style="margin-bottom: 24px">
               同时发信息给本级领导
             </a-checkbox>
           </a-col>
@@ -122,11 +122,6 @@
                 </a-select-option>
               </a-select>
             </a-form-model-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="24">
-          <a-col :span="12">
-
           </a-col>
         </a-row>
         <a-row :gutter="24" style="display: flex;align-items: center">
@@ -158,17 +153,17 @@
 </template>
 
 <script>
-import {getAreaWithUserIfo, getPeerRecipient, getLeaders} from '@/api/user'
+  import {getAreaWithUserIfo, getPeerRecipient, getLeaders} from '@/api/user'
   import {getUserInfo} from "@/util/storage";
   import Cookies from "js-cookie";
-  import axios from "axios";
-import {massSend, msgSend} from "@/api/send";
-import {deleteFile} from "@/api/list";
+  import {massSend, msgSend} from "@/api/send";
+  import {deleteFile} from "@/api/list";
 	export default {
 		name: "notice",
 		data() {
 			return {
         userInfo: {},
+        unittype: null,
         wrapperCol: { span: 24 },
         filteredOptions:[],
         form: {
@@ -188,8 +183,10 @@ import {deleteFile} from "@/api/list";
           acceptingUnitIds: [],
           peerRecipientIds: []
         },
+        sendLeaders: [],
         leaders: [],
         checkAll: false,
+        withLeaders: false,
         areaUsers: [],
         replaceFields: {
           children:'children',
@@ -272,9 +269,9 @@ import {deleteFile} from "@/api/list";
             // const treeD = []
             t.userTitTree(res.data.data)
             // treeD.push(t.findNodeById(res.data.data,t.userInfo.districtId))
-            t.areaUsers = t.findNodeById(res.data.data,t.userInfo.districtId).children
-            // t.leaders = t.findNodeById(res.data.data,t.userInfo.districtId).users.filter(i=>i.roleId == 2)
-            t.unittype = t.findNodeById(res.data.data,t.userInfo.districtId)?.type
+            const treeD = t.findNodeById(res.data.data,t.userInfo.districtId)
+            t.areaUsers = treeD.children
+            t.unittype = treeD.type
           }else{
             console.log('暂无数据')
           }
@@ -317,12 +314,20 @@ import {deleteFile} from "@/api/list";
 
       isAddLeaders(e) {
         const t = this
-        console.log(`checked = ${e.target.checked}`);
+        t.withLeaders = !t.withLeaders
+        t.sendLeaders = []
+        if(e.target.checked){
+          for(let i of t.leaders){
+            const {realName,...data} = i
+            const { id: recipienterId, name: recipienterName, phone: recipienterPhone,...rest} = data
+            const obj = { recipienterId, recipienterName, recipienterPhone, province: null,city: null,area: null,town: null,receiveUnit: t.userInfo.company,unittype: t.userInfo.unittype,roleId: 2,...rest}
+            t.sendLeaders.push(obj)
+          }
+        }
       },
 
       fileChange(info) {
         let fileList = [...info.fileList];
-        // 2. read from response and show file link
         fileList = fileList.map(file => {
           if(file.status == 'done'){
             if (file.response) {
@@ -375,7 +380,7 @@ import {deleteFile} from "@/api/list";
               const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
               this.form.acceptingUnitIds.push(obj)
             }
-
+            this.form.acceptingUnitIds = [...this.form.acceptingUnitIds,...this.sendLeaders]
             if(this.form.recipient.length>0){
               const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
               for(let i of bList){
@@ -395,6 +400,7 @@ import {deleteFile} from "@/api/list";
               }
               this.fileList = []
               this.delList = []
+              this.withLeaders = false
               this.$refs.ruleForm.clearValidate()
               this.$refs.ruleForm.resetFields()
             })

@@ -95,7 +95,7 @@
                 全选
               </a-checkbox>
             </div>
-            <a-form-model-item prop="receiver">
+            <a-form-model-item prop="receiver" style="margin-bottom: 6px">
               <a-tree-select
                   show-search
                   tree-checkable
@@ -115,6 +115,9 @@
               >
               </a-tree-select>
             </a-form-model-item>
+            <a-checkbox :checked="withLeaders" @change="isAddLeaders" style="margin-bottom: 24px" :disabled="disable">
+              同时发信息给本级领导
+            </a-checkbox>
           </a-col>
           <a-col :span="12">
             <b style="margin-bottom: 6px">平级接收人选择：</b>
@@ -158,7 +161,6 @@
           </a-col>
         </a-row>
       </div>
-
       <div class="right">
         <h2>短信预览</h2>
         <div class="mobile">
@@ -208,7 +210,9 @@ export default {
         acceptingUnitIds: [],
         peerRecipientIds: []
       },
+      sendLeaders: [],
       checkAll: false,
+      withLeaders: false,
       areaUsers: [],
       replaceFields: {
         children:'children',
@@ -268,9 +272,18 @@ export default {
   methods: {
     openMod(type,data){
       const t = this
+      t.getLeaders()
       t.form.acceptingUnitIds = []
       t.form.peerRecipientIds = []
+      t.sendLeaders = []
       if(type == 'review' || type == 'view' || type == 'edit') {
+        t.sendLeaders = data.acceptingUnitIds.filter(i=>i.roleId == 2)
+        data.acceptingUnitIds = data.acceptingUnitIds.filter(i=>i.roleId == 3)
+        if(t.sendLeaders.length>0){
+          t.withLeaders = true
+        }else{
+          t.withLeaders = false
+        }
         for(let i in data){
           if(t.isValidKey(i,t.form)){
             t.form[i] = data[i]
@@ -325,7 +338,6 @@ export default {
           t.fileList = []
         }
         t.title = '信息转发'
-        t.getLeaders()
         t.disable = false
       }
       t.visible = true
@@ -400,6 +412,24 @@ export default {
       }
     },
 
+    isAddLeaders(e) {
+      const t = this
+      t.withLeaders = !t.withLeaders
+      if(e.target.checked){
+        // if(t.userInfo.role.id == 3){
+          t.sendLeaders = []
+          for(let i of t.leaders){
+            const {realName,...data} = i
+            const { id: recipienterId, name: recipienterName, phone: recipienterPhone,...rest} = data
+            const obj = { recipienterId, recipienterName, recipienterPhone, province: null,city: null,area: null,town: null,receiveUnit: t.userInfo.company,unittype: t.userInfo.unittype,roleId: 2,...rest}
+            t.sendLeaders.push(obj)
+          }
+        // }
+      }else{
+        t.sendLeaders = []
+      }
+    },
+
     fileChange(info) {
       let fileList = [...info.fileList];
       // 2. read from response and show file link
@@ -455,6 +485,7 @@ export default {
             const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
             this.form.acceptingUnitIds.push(obj)
           }
+          this.form.acceptingUnitIds = [...this.form.acceptingUnitIds,...this.sendLeaders]
           if(this.form.recipient.length>0){
             const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
             for(let i of bList){
