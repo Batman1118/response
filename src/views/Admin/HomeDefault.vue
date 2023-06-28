@@ -13,17 +13,17 @@
         <div class="content-right">
           <div class="item">
             <p>本月通知数</p>
-            <span>646</span>
+            <span>--</span>
           </div>
           <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
           <div class="item">
             <p>叫应数</p>
-            <span>568</span>
+            <span>--</span>
           </div>
           <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
           <div class="item">
             <p>叫应率</p>
-            <span>88%</span>
+            <span>--</span>
           </div>
         </div>
       </div>

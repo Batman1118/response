@@ -1,7 +1,12 @@
 <template>
   <a-card title="各地区统计数据">
     <div class="item" v-for="(item, index) in lists" :key="'team' + index">
+      <a-tooltip overlayClassName="tip">
+        <template #title>
+          数据统计模块待呈现
+        </template>
       <a style="border: 1px solid #1890ff;padding: 5px 8px;border-radius: 5px;">{{ item.title }}</a>
+      </a-tooltip>
     </div>
   </a-card>
 </template>

@@ -16,7 +16,7 @@
   <a href="massSend" v-if="userinfo.role.id == 3">发布通知</a>
   <a-tooltip overlayClassName="tip">
     <template #title>
-      数据统计页面待呈现
+      数据统计模块待呈现
     </template>
     <a>查看统计</a>
   </a-tooltip>
