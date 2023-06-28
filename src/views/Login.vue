@@ -80,7 +80,7 @@
 <!--        </a-tab-pane>-->
 <!--      </a-tabs>-->
       <div style="margin-bottom: 20px">
-        <a-checkbox :checked="isAuto" style="color:#fff;">自动登录</a-checkbox>
+        <a-checkbox :checked="saveAccount" style="color:#fff;" @change="isSave">记住密码</a-checkbox>
 <!--        <a style="float: right">忘记密码</a>-->
       </div>
       <a-form-item style="text-align: center">
@@ -105,12 +105,14 @@
 
 import { login, getMenuAdmin } from "@/api/login";
 import Cookies from 'js-cookie';
+import {Base64} from "js-base64";
+
 export default {
   name: "login",
   data() {
     return {
       isLoading: false,
-      isAuto: false,
+      saveAccount: false,
       // hasErrors,
       // form: this.$form.createForm(this),
       form: {
@@ -128,8 +130,22 @@ export default {
     // this.$nextTick(() => {
     //   this.form.validateFields();
     // });
+    this.hasUserCodeOrPassword()
   },
   methods: {
+    hasUserCodeOrPassword(){
+      if (localStorage.getItem('userName') && localStorage.getItem('userPassword')) {
+        this.form.name = localStorage.getItem('userName')
+        this.form.pwd = Base64.decode(localStorage.getItem('userPassword'))//解密
+        this.saveAccount = true
+      }
+    },
+
+    isSave(e){
+      const t = this
+      t.saveAccount = !t.saveAccount
+    },
+
     handleSubmit() {
       this.$refs.ruleForm.validate(async (valid) => {
         if (valid) {
@@ -139,6 +155,13 @@ export default {
             Cookies.set('resTk', res.data.data.tk);
             Cookies.set('resUid', res.data.data.uid);
             Cookies.set('userInfo',JSON.stringify(res.data.data),{expires: 7})
+            if (this.saveAccount) {
+              localStorage.setItem('userName', this.form.name)
+              localStorage.setItem('userPassword', Base64.encode(this.form.pwd))
+            } else {
+              localStorage.removeItem('userName')
+              localStorage.removeItem('userPassword')
+            }
             this.$router.push('/home')
           } else {
             this.$message.warning(res.data.msg);
