@@ -1,11 +1,12 @@
 <template>
   <a-card title="最新叫应记录">
+    <a slot="extra" href="callRecord" class="tapBtn">查看全部</a>
     <a-list item-layout="horizontal" :data-source="lists">
       <a-list-item slot="renderItem" slot-scope="item">
         <a-list-item-meta
           :description="item.responseTime | filterTime"
         >
-          <a slot="title" href="#" @click="openDetails(item.warnInfoId)">{{ item.publishingUnit }} 发布了 {{item.title}}</a>
+          <a slot="title" href="#" @click="openDetails(item.warnInfoId)">{{item.receiveUnit}} 的 {{ item.recipienterName }} 在 {{item.title}} 进行了“已安排部署”叫应</a>
           <a-avatar
             slot="avatar"
             :src="userImg"
@@ -52,6 +53,7 @@ export default {
         this.$message.error(res.data.msg)
       }
     },
+
     openDetails(id){
       const t = this
       t.$refs.msgDetail.getDetails(id)
@@ -60,3 +62,11 @@ export default {
   }
 };
 </script>
+<style lang="less" scoped>
+.tapBtn{
+  color: #333;
+  &:hover{
+    color: @link;
+  }
+}
+</style>

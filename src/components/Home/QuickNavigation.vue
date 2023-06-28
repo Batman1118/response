@@ -14,12 +14,7 @@
       <a :class="toReview>0?'resColor':''" @click="toRev" v-if="userinfo.role.id == 2">待审核<span v-if="toReview > 0">（{{toReview}}）</span></a>
     </a-tooltip>
   <a href="massSend" v-if="userinfo.role.id == 3">发布通知</a>
-  <a-tooltip overlayClassName="tip">
-    <template #title>
-      数据统计模块待呈现
-    </template>
-    <a>查看统计</a>
-  </a-tooltip>
+  <a href="audit" >查看统计</a>
   <a href="user" v-if="userinfo.role.id == 3">用户管理</a>
     <!-- <a-button><a-icon type="plus" />添加</a-button> -->
   </a-card>
