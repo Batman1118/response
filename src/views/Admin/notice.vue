@@ -65,7 +65,7 @@
                 :file-list="fileList"
                 @change="fileChange"
                 :headers="header"
-                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar"
+                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar, .jpg, .jpeg, .png"
                 :data="{module: 'naturalDisasterPath'}"
                 :remove="(file)=>{removeFile(file)}"
             >
@@ -114,7 +114,12 @@
             </a-checkbox>
           </a-col>
           <a-col :span="12">
-            <b style="margin-bottom: 6px">平级接收人选择：</b>
+            <div style="display:flex;justify-content: space-between;align-items: center;">
+              <b>平级接收人选择：</b>
+              <a-checkbox :checked="checkSlAll" @change="checkSlChange">
+                全选
+              </a-checkbox>
+            </div>
             <a-form-model-item prop="recipient">
               <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
@@ -186,6 +191,7 @@
         sendLeaders: [],
         leaders: [],
         checkAll: false,
+        checkSlAll: false,
         withLeaders: false,
         areaUsers: [],
         replaceFields: {
@@ -217,7 +223,7 @@
           timeout: [{ required: true, message: '请输入超时时间', trigger: 'blur'}],
           receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           reviewId: [{ required: true, message: '请选择审批人', trigger: 'change'}],
-          recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
+          // recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
           // acceptingUnitIds: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           // peerRecipientIds: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
         },
@@ -309,6 +315,26 @@
           t.form.receiver = t.traverseTree(t.areaUsers)
         }else{
           t.form.receiver = []
+        }
+      },
+
+      //选择平级部门部分
+      handle(selectedItems) {
+        const t = this
+        if(t.form.recipient.length == t.filteredOptions.length){
+          t.checkSlAll = true
+        }else{
+          t.checkSlAll = false
+        }
+      },
+
+      checkSlChange(e) {
+        const t = this
+        t.checkSlAll = !t.checkSlAll
+        if(t.checkSlAll == true){
+          t.form.recipient = t.filteredOptions.map(i=>i.id)
+        }else{
+          t.form.recipient = []
         }
       },
 
@@ -482,10 +508,7 @@
       onSelect() {
         console.log(...arguments);
       },
-			//选择平级部门部分
-			handle(selectedItems) {
-				this.selectedItems = selectedItems;
-			},
+
       handleRisk(selectedItems) {
         // this.selectedItems = selectedItems;
       },

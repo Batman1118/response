@@ -49,32 +49,32 @@ export default {
               {
                 value: [10, 40, 20, 60, 10, 60],
                 name: "红",
-				lineStyle:{
-					color:'red'
-				},
-				itemStyle: { 
-					color:'red'
-				}
+                lineStyle:{
+                  color:'red'
+                },
+                itemStyle: {
+                  color:'red'
+                }
               },
               {
                 value: [50, 14, 28, 26, 42, 21],
                 name: "橙",
-				lineStyle:{
-					color:'#f66d05'
-				},
-				itemStyle: { 
-					color:'#f66d05'
-				}
+                lineStyle:{
+                  color:'#f66d05'
+                },
+                itemStyle: {
+                  color:'#f66d05'
+                }
               },
               {
                 value: [60, 20, 43, 73, 12, 80],
                 name: "黄",
-				lineStyle:{
-					color:'#f7ad00'
-				},
-				itemStyle: { 
-					color:'#f7ad00'
-				}
+                lineStyle:{
+                  color:'#f7ad00'
+                },
+                itemStyle: {
+                  color:'#f7ad00'
+                }
               },
             ],
           },

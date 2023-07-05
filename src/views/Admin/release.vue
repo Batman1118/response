@@ -61,8 +61,8 @@
           </div>
         </template >
         <template #responseSituation="text">
-          <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
-            {{text == 1 ? '待叫应' : text == 2 ?'已叫应':text == 3 ?'超时未叫应' : ''}}
+          <a-tag :color="text === 3 ? 'green' :text === 2? 'blue':text === 1?'orange':'red'">
+            {{text == 1 ? '均未叫应' : text == 2 ?'部分叫应':text == 3 ?'全部叫应' : ''}}
           </a-tag>
         </template>
         <template #operation="text, record, index">

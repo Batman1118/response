@@ -120,7 +120,12 @@
             </a-checkbox>
           </a-col>
           <a-col :span="12">
-            <b style="margin-bottom: 6px">平级接收人选择：</b>
+            <div style="display:flex;justify-content: space-between;align-items: center;">
+              <b>平级接收人选择：</b>
+              <a-checkbox :checked="checkSlAll" @change="checkSlChange" :disabled="disable">
+                全选
+              </a-checkbox>
+            </div>
             <a-form-model-item>
               <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle" :disabled="disable">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
@@ -212,6 +217,7 @@ export default {
       },
       sendLeaders: [],
       checkAll: false,
+      checkSlAll: false,
       withLeaders: false,
       areaUsers: [],
       replaceFields: {
@@ -409,6 +415,26 @@ export default {
         t.form.receiver = t.traverseTree(t.areaUsers)
       }else{
         t.form.receiver = []
+      }
+    },
+
+    //选择平级部门部分
+    handle(selectedItems) {
+      const t = this
+      if(t.form.recipient.length == t.filteredOptions.length){
+        t.checkSlAll = true
+      }else{
+        t.checkSlAll = false
+      }
+    },
+
+    checkSlChange(e) {
+      const t = this
+      t.checkSlAll = !t.checkSlAll
+      if(t.checkSlAll == true){
+        t.form.recipient = t.filteredOptions.map(i=>i.id)
+      }else{
+        t.form.recipient = []
       }
     },
 
@@ -651,10 +677,6 @@ export default {
     },
     onSelect() {
       console.log(...arguments);
-    },
-    //选择平级部门部分
-    handle(selectedItems) {
-      this.selectedItems = selectedItems;
     },
     handleRisk(selectedItems) {
       // this.selectedItems = selectedItems;

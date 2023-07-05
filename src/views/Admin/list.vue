@@ -82,7 +82,7 @@
         </template>
       </a-table>
     </div>
-    <msg-edit-mod ref="msgEdit" @refresh="getData"></msg-edit-mod>
+    <msg-edit-mod ref="msgEdit" @refresh="getData()"></msg-edit-mod>
     <msg-detail-mod ref="msgDetail"></msg-detail-mod>
 		<!-- 对话框 -->
 <!--		<a-modal title="回执" -->

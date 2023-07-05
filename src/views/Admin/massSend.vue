@@ -101,8 +101,11 @@
           </a-form-model-item>
         </a-col>
         <a-col :span="12">
-          <div>
+          <div style="display:flex;justify-content: space-between;align-items: center;">
             <b>平级接收人选择：</b>
+            <a-checkbox :checked="checkSlAll" @change="checkSlChange">
+              全选
+            </a-checkbox>
           </div>
           <a-form-model-item>
             <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
@@ -174,6 +177,7 @@ import {getUserInfo} from "@/util/storage";
           horizontalRecipient: []
         },
         checkAll: false,
+        checkSlAll: false,
         areaUsers: [],
         replaceFields: {
           children:'children',
@@ -272,6 +276,26 @@ import {getUserInfo} from "@/util/storage";
         }
       },
 
+      //选择平级部门部分
+      handle(selectedItems) {
+        const t = this
+        if(t.form.recipient.length == t.filteredOptions.length){
+          t.checkSlAll = true
+        }else{
+          t.checkSlAll = false
+        }
+      },
+
+      checkSlChange(e) {
+        const t = this
+        t.checkSlAll = !t.checkSlAll
+        if(t.checkSlAll == true){
+          t.form.recipient = t.filteredOptions.map(i=>i.id)
+        }else{
+          t.form.recipient = []
+        }
+      },
+
       confirmSend(){
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
@@ -304,6 +328,8 @@ import {getUserInfo} from "@/util/storage";
                 this.$message.success('信息群发成功')
                 this.$refs.ruleForm.clearValidate()
                 this.$refs.ruleForm.resetFields()
+                this.form.recipient = []
+
               }else{
                 this.$message.error(res.data.msg)
                 this.$refs.ruleForm.clearValidate()
@@ -330,9 +356,6 @@ import {getUserInfo} from "@/util/storage";
       handleLevel(selectedItems) {
         // this.selectedItems = selectedItems;
       },
-			handle(selectedItems) {
-				// this.selectedItems = selectedItems;
-			},
 			onChange(){
 				console.log(this.value)
 			},
