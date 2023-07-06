@@ -1,7 +1,7 @@
 <template>
   <div class="inner">
     <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
-      <a-col :span="8">
+      <a-col :span="6">
         <a-radio-group v-model="search.searchParams.emergType" @change="getData">
           <a-radio-button :value="null">
             全部
@@ -14,8 +14,8 @@
           </a-radio-button>
         </a-radio-group>
       </a-col>
-      <a-col :span="16">
-        <a-row type="flex" justify="end" :gutter="12">
+      <a-col :span="18">
+        <a-row type="flex" justify="end" :gutter="18">
           <a-col :span="8">
             <a-range-picker
                 v-model="timeRange"
@@ -25,6 +25,9 @@
                 @ok="timeOk"
                 style="width: 100%"
             />
+          </a-col>
+          <a-col :span="6">
+            <a-input v-model="search.searchParams.publishingUnit" placeholder="单位名称" style="width: 100%"/>
           </a-col>
           <a-col :span="4">
             <a-button type="primary" @click="getData">查询</a-button>
@@ -86,15 +89,17 @@ import {getUserInfo} from "@/util/storage";
 const columns = [{
   title: '序号',
   dataIndex: 'index',
-  width: '8%',
   scopedSlots: {
     customRender: 'index'
   }
 },
   {
+    title: '信息标题',
+    dataIndex: 'title',
+  },
+  {
     title: '发布时间',
     dataIndex: 'publishingTime',
-    width: '15%',
     scopedSlots: {
       customRender: 'publishingTime'
     } //设置定制化表格数据
@@ -102,12 +107,10 @@ const columns = [{
   {
     title: '发布单位',
     dataIndex: 'publishingUnit',
-    width: '12%',
   },
   {
     title: '灾种',
     dataIndex: 'disasterType',
-    width: '8%',
     scopedSlots: {
       customRender: 'disasterType'
     }
@@ -118,12 +121,6 @@ const columns = [{
     scopedSlots: {
       customRender: 'warningLevel'
     }, //设置定制化表格数据
-    width: '8%',
-  },
-  {
-    title: '信息标题',
-    dataIndex: 'title',
-    width: '16%',
   },
   {
     title: '附件',
@@ -136,7 +133,6 @@ const columns = [{
   {
     title: '叫应情况',
     dataIndex: 'responseSituation',
-    width: '10%',
     scopedSlots: {
       customRender: 'responseSituation'
     }, //设置定制化表格数据
@@ -158,6 +154,7 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
+          publishingUnit: '',
           emergType: null,
           startTime: '',
           endTime: ''
@@ -269,6 +266,7 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
+          publishingUnit: '',
           emergType: null,
           startTime: '',
           endTime: ''

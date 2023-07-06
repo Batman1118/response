@@ -4,10 +4,13 @@
       <a-col :span="4">
         <a-button v-if="unittype && unittype !== null" type="primary" @click="editData('add',{})">新增用户</a-button>
       </a-col>
-      <a-col :span="20" v-if="unittype == null || !unittype">
-        <a-row type="flex" justify="end" :gutter="12">
-          <a-col :span="4">
-            <a-cascader :options="areaData" v-model="areaVal" placeholder="行政规划" expandTrigger="hover" :fieldNames="fieldNames" changeOnSelect @change="onChange" style="width: 100%"/>
+      <a-col :span="20">
+        <a-row type="flex" justify="end" :gutter="14">
+          <a-col :span="6">
+            <a-input v-model="search.searchParams.company" placeholder="单位名称" style="width: 100%"/>
+          </a-col>
+          <a-col :span="4" v-if="unittype == null || !unittype">
+            <a-cascader :options="areaData" v-model="areaVal" placeholder="所属区域" expandTrigger="hover" :fieldNames="fieldNames" changeOnSelect @change="onChange" style="width: 100%"/>
           </a-col>
           <a-col :span="4">
             <a-button type="primary" @click="getUserList">查询</a-button>
@@ -60,6 +63,7 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
+          company: '',
           province: '',
           city: '',
           area: '',
@@ -127,7 +131,7 @@ export default {
   methods:{
     async getUserList(){
       const t = this
-      if(t.search.searchParams.province == '' && t.search.searchParams.city == '' && t.search.searchParams.area == '' ){
+      if(t.search.searchParams.province == '' && t.search.searchParams.city == '' && t.search.searchParams.area == '' && t.search.searchParams.company == ''){
         const {searchParams,...data} = t.search
         const res = await getRecipient(data)
         if(res.data.code == 100){
@@ -163,6 +167,7 @@ export default {
         pageIndex: 1,
         pageSize: 10,
         searchParams:{
+          company: '',
           province: '',
           city: '',
           area: '',
@@ -229,6 +234,7 @@ export default {
     onChange(value) {
       const t = this
       t.search.searchParams = {
+        company: '',
         province: '',
         city: '',
         area: '',

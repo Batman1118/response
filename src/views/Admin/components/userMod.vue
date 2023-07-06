@@ -257,7 +257,7 @@ export default {
         // }
         // t.form.province = t.findNodeByCode(t.areaData,code.substr(0,2)).name
         // t.form.town = ''
-        t.form.company = label[0] + '自然灾害综合预警监测中心'
+        t.form.company = label[0] + '自然灾害综合监测预警中心'
       }
     },
 
