@@ -6,7 +6,7 @@
         <a-list-item-meta
           :description="item.responseTime | filterTime"
         >
-          <a slot="title" href="#" @click="openDetails(item.warnInfoId)">{{item.receiveUnit}} 的 {{ item.recipienterName }} 在 {{item.title}} 进行了“已安排部署”叫应</a>
+          <a slot="title" href="#" @click="openDetails(item.warnInfoId)">{{item.receiveUnit}} 的 {{ item.responseRealName }} 在 {{item.title}} 进行了“已安排部署”叫应</a>
           <a-avatar
             slot="avatar"
             :src="userImg"

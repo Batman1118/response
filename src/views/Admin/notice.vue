@@ -355,16 +355,18 @@
       fileChange(info) {
         let fileList = [...info.fileList];
         fileList = fileList.map(file => {
-          if(file.status == 'done'){
-            if (file.response) {
-              const res = file.response
-              if(res.code == 100){
-                this.$message.success('文件上传成功')
-              }else{
-                this.$message.error('文件上传失败')
+          if (file.uid === info.file.uid) {
+            if (file.status == 'done') {
+              if (file.response) {
+                const res = file.response
+                if (res.code == 100) {
+                  this.$message.success('文件上传成功')
+                } else {
+                  this.$message.error('文件上传失败')
+                }
+                // Component will show file.url as link
+                file.url = res.data.fileUrl
               }
-              // Component will show file.url as link
-              file.url = res.data.fileUrl
             }
           }
           return file;
@@ -373,7 +375,7 @@
       },
 
       removeFile(file){
-        this.delList.push(file.uid)
+        this.delList.push(file.response.data.id)
       },
 
       async deleteFile(){
@@ -401,9 +403,9 @@
             }
             const newAList = [].concat(...aList)
             for(let i of newAList){
-              const {realName,...data} = i
-              const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,...rest} = data
-              const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
+              // const {realName,...data} = i
+              const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,realName: recipienterRealName,...rest} = i
+              const obj = { recipienterId, recipienterName,recipienterRealName, recipienterPhone, receiveUnit,...rest}
               this.form.acceptingUnitIds.push(obj)
             }
             this.form.acceptingUnitIds = [...this.form.acceptingUnitIds,...this.sendLeaders]
@@ -411,7 +413,7 @@
               const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
               for(let i of bList){
                 const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
-                const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
+                const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,recipienterRealName:recipienterName,...rest}
                 this.form.peerRecipientIds.push(obj)
               }
             }

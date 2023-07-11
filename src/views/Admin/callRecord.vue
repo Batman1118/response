@@ -104,10 +104,10 @@ const columns = [{
   },
   {
     title: '接收人',
-    dataIndex: 'recipienterName',
+    dataIndex: 'responseRealName',
     width: '20%',
     scopedSlots: {
-      customRender: 'recipienterName'
+      customRender: 'responseRealName'
     }
   },
   {

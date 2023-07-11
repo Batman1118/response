@@ -65,7 +65,7 @@
                 :file-list="fileList"
                 @change="fileChange"
                 :headers="header"
-                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar"
+                accept=".doc, .docx, .word, .pdf, .zip, .xlsx, .rar, .jpg, .jpeg, .png"
                 :data="{module: 'naturalDisasterPath'}"
                 @download="downloadFile"
                 :remove="(file)=>{removeFile(file)}"
@@ -460,16 +460,18 @@ export default {
       let fileList = [...info.fileList];
       // 2. read from response and show file link
       fileList = fileList.map(file => {
-        if(file.status == 'done'){
-          if (file.response) {
-            const res = file.response
-            if(res.code == 100){
-              this.$message.success('文件上传成功')
-            }else{
-              this.$message.error('文件上传失败')
+        if (file.uid === info.file.uid) {
+          if (file.status == 'done') {
+            if (file.response) {
+              const res = file.response
+              if (res.code == 100) {
+                this.$message.success('文件上传成功')
+              } else {
+                this.$message.error('文件上传失败')
+              }
+              // Component will show file.url as link
+              file.url = res.data.fileUrl
             }
-            // Component will show file.url as link
-            file.url = res.data.fileUrl
           }
         }
         return file;
@@ -478,7 +480,7 @@ export default {
     },
 
     removeFile(file){
-      this.delList.push(file.uid)
+      this.delList.push(file.response.data.id)
     },
 
     async deleteFile(){
@@ -506,9 +508,9 @@ export default {
           }
           const newAList = [].concat(...aList)
           for(let i of newAList){
-            const {realName,...data} = i
-            const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,...rest} = data
-            const obj = { recipienterId, recipienterName, recipienterPhone, receiveUnit,...rest}
+            // const {realName,...data} = i
+            const {id:recipienterId,name: recipienterName,phone: recipienterPhone,company: receiveUnit,realName: recipienterRealName,...rest} = i
+            const obj = { recipienterId, recipienterName, recipienterRealName, recipienterPhone, receiveUnit,...rest}
             this.form.acceptingUnitIds.push(obj)
           }
           this.form.acceptingUnitIds = [...this.form.acceptingUnitIds,...this.sendLeaders]
@@ -516,7 +518,7 @@ export default {
             const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
             for(let i of bList){
               const {id:recipienterId,recipientName: recipienterName,phone: recipienterPhone, company: receiveUnit,...rest} = i
-              const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,...rest}
+              const obj = {recipienterId, recipienterName,recipienterPhone,receiveUnit,unittype:this.unittype,recipienterRealName:recipienterName,...rest}
               this.form.peerRecipientIds.push(obj)
             }
           }

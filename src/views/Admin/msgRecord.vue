@@ -33,7 +33,7 @@
           </p>
           <template #actions>
             <div>
-              接收号码：<span>{{item.recipients.map(i=>i.name + '(' + i.phone + ')').join('、')}}</span>
+              接收号码：<span>{{item.recipients.map(i=>i.realName + '(' + i.phone + ')').join('、')}}</span>
             </div>
             <div>
               <a-button type="primary" @click="viewDetails(item)">查看详情</a-button>

@@ -308,7 +308,7 @@ import {getUserInfo} from "@/util/storage";
             }
             const newAList = [].concat(...aList)
             for(let i of newAList){
-              const {realName,id,roleId,...data} = i
+              const {id,roleId,...data} = i
               const {company: recipientUnit,...rest} = data
               const obj = {recipientUnit,recipientType:1,...rest}
               this.form.verticalRecipient.push(obj)
@@ -317,7 +317,7 @@ import {getUserInfo} from "@/util/storage";
               const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
               for(let i of bList){
                 const {recipientName: name, company: recipientUnit,...rest} = i
-                const obj = {name,recipientUnit,recipientType:2,...rest}
+                const obj = {name,recipientUnit,recipientType:2,realName: name,...rest}
                 const {id,...noId} = obj
                 this.form.horizontalRecipient.push(noId)
               }
@@ -329,7 +329,8 @@ import {getUserInfo} from "@/util/storage";
                 this.$refs.ruleForm.clearValidate()
                 this.$refs.ruleForm.resetFields()
                 this.form.recipient = []
-
+                this.checkAll = false
+                this.checkSlAll = false
               }else{
                 this.$message.error(res.data.msg)
                 this.$refs.ruleForm.clearValidate()
