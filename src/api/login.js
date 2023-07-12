@@ -30,3 +30,19 @@ export function getDistrictInfo(){
         method:'get',
     })
 }
+
+// 获取首页统计数据
+export function getBasicData(){
+    return request({
+        url:'/statistics/basicData',
+        method:'get',
+    })
+}
+
+// 获取首页统计数据
+export function getWarningData(){
+    return request({
+        url:'/statistics/warningIndex',
+        method:'get',
+    })
+}

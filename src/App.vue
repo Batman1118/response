@@ -15,10 +15,18 @@
   padding: 0px;
 }
 .inner{
-	background-color: #fff;padding: 20px 10px;
+	background-color: #fff;
+  padding: 20px 10px;
 	height: 88vh;
   overflow: hidden;
   overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    background-color: transparent;
+  }
 }
 .ftright{
 	float:right;

@@ -13,17 +13,17 @@
         <div class="content-right">
           <div class="item">
             <p>本月通知数</p>
-            <span>--</span>
+            <span>{{basicData.notificationsThisMonthNum}}</span>
           </div>
           <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
           <div class="item">
             <p>叫应数</p>
-            <span>--</span>
+            <span>{{basicData.responsesThisMonthNum}}</span>
           </div>
           <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
           <div class="item">
             <p>叫应率</p>
-            <span>--</span>
+            <span>{{basicData.responsesRate}}</span>
           </div>
         </div>
       </div>
@@ -54,6 +54,8 @@ import IndexEcharts from '@/components/Home/IndexEcharts'
 import Team from '@/components/Home/Team'
 import Cookies from "js-cookie";
 import {getUserInfo} from "@/util/storage";
+import {getResponseRecord} from "@/api/list";
+import {getBasicData, getbasicData} from "@/api/login";
 
 export default {
   name: 'home-default',
@@ -67,11 +69,12 @@ export default {
   },
   data() {
     return {
-      userInfo: getUserInfo()
+      userInfo: getUserInfo(),
+      basicData: {}
     };
   },
   created() {
-
+    this.getData()
   },
   computed: {
     dateTime () {
@@ -82,6 +85,17 @@ export default {
         return '下午好'
       } else {
         return '晚上好'
+      }
+    }
+  },
+  methods:{
+    async getData(){
+      const t = this
+      const res = await getBasicData()
+      if(res.data.code == 100){
+        t.basicData = res.data.data
+      }else{
+        this.$message.error(res.data.msg)
       }
     }
   }

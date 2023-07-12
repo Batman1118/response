@@ -167,6 +167,7 @@ export default {
       align-items: center !important;
       .tit{
         width: 50%;
+        color: @base
       }
     }
     /deep/ .ant-card-actions{

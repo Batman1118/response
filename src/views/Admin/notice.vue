@@ -369,7 +369,7 @@
               }
             }
           }
-          return file;
+          return file
         });
         this.fileList = fileList;
       },
