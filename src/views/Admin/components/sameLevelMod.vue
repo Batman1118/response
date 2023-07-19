@@ -163,7 +163,7 @@ export default {
       t.form.districtId = value
       const code = t.findCodeById(t.areaData,value).code
       if(code.length == 2){
-        t.form.company = '自治区自然灾害预警中心'
+        t.form.company = '自治区自然灾害综合监测预警中心'
         // t.form.province = t.findNodeByCode(t.areaData,code).name
         // t.form.city = ''
         // t.form.area = ''
