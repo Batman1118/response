@@ -11,8 +11,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 * {
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
 }
 .inner{
 	background-color: #fff;

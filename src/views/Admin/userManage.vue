@@ -268,7 +268,6 @@ export default {
     onChange(value) {
       const t = this
       t.search.searchParams.districtId = value[value.length - 1]
-      console.log(value,'val')
     },
     findAreaById(data,value) {
       for (const node of data) {

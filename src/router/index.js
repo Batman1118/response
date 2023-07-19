@@ -94,6 +94,12 @@ const routes = [
 	    meta: { title: '平级接收人管理' },
 	    component: () => import('@/views/Admin/sameLevel'),
 	  },
+		{
+			path: '/addressBook',
+			name: 'addressBook',
+			meta: { title: '原通讯录' },
+			component: () => import('@/views/Admin/addressBook'),
+		},
       {
         path: '/user',
         name: 'user',

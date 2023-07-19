@@ -60,9 +60,9 @@
             <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
           </div>
         </template >
-        <template #responseSituation="text">
-          <a-tag :color="text === 3 ? 'green' :text === 2? 'blue':text === 1?'orange':'red'">
-            {{text == 1 ? '均未叫应' : text == 2 ?'部分叫应':text == 3 ?'全部叫应' : ''}}
+        <template #responsesRate="text">
+          <a-tag :color="Number(text.split('%')[0]) == 100 ? 'green' :Number(text.split('%')[0]) == 0? 'red':'orange'">
+            {{ text }}
           </a-tag>
         </template>
         <template #operation="text, record, index">
@@ -141,10 +141,10 @@ import {getUserInfo} from "@/util/storage";
 		},
 		{
 			title: '叫应情况',
-			dataIndex: 'responseSituation',
+			dataIndex: 'responsesRate',
 			width: '10%',
 			scopedSlots: {
-				customRender: 'responseSituation'
+				customRender: 'responsesRate'
 			}, //设置定制化表格数据
 		},
 		{

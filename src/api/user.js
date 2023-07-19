@@ -75,7 +75,7 @@ export function addRecipient(data){
     return request({
         url:'/mesmanager/recipient/add',
         method:'post',
-        data:data,
+        data:data
     })
 }
 
@@ -83,7 +83,7 @@ export function updateRecipient(data){
     return request({
         url:'/mesmanager/recipient/update',
         method:'post',
-        data:data,
+        data:data
     })
 }
 
@@ -102,9 +102,93 @@ export function getLeaders(){
     })
 }
 
+// 获取原通讯录用户
+export function getAddressBook(data){
+    return request({
+        url: '/addressbook/user/page',
+        method: 'post',
+        data:data
+    })
+}
 
+// 新增原通讯录用户
+export function addGroupUser(data){
+    return request({
+        url: '/addressbook/user/add',
+        method: 'post',
+        data:data
+    })
+}
 
+// 修改原通讯录用户
+export function updateGroupUser(data){
+    return request({
+        url: '/addressbook/user/update',
+        method: 'post',
+        data:data
+    })
+}
 
+// 删除原通讯录用户
+export function delGroupUser(data){
+    return request({
+        url: '/addressbook/user/delete',
+        method: 'post',
+        data:data
+    })
+}
 
+// 获取通讯录分组
+export function getGroupList(){
+    return request({
+        url: '/addressbook/group/listAll',
+        method: 'get'
+    })
+}
 
+// 新增通讯录分组
+export function addGroup(data){
+    return request({
+        url: '/addressbook/group/add',
+        method: 'post',
+        data:data
+    })
+}
 
+// 修改通讯录分组
+export function updateGroup(data){
+    return request({
+        url: '/addressbook/group/update',
+        method: 'post',
+        data:data
+    })
+}
+
+// 删除通讯录分组
+export function delGroup(data){
+    return request({
+        url: '/addressbook/group/delete',
+        method: 'post',
+        data:data
+    })
+}
+
+// 获取分组和组员
+export function getUserByGroup(){
+    return request({
+        url: '/addressbook/group/listUserByGroup',
+        method: 'get'
+    })
+}
+
+// 导入通讯录
+export function importFile(data){
+    return request({
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+        url: '/addressbook/user/import',
+        method: 'post',
+        data: data
+    })
+}

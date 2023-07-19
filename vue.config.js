@@ -10,4 +10,22 @@ module.exports = {
             ],
         },
     },
+    configureWebpack: {
+        module: {
+            rules: [
+                {
+                    test: /\.(xlsx|xls)$/,
+                    use: [
+                        {
+                            loader: 'file-loader',
+                            options: {
+                                name: '[name].[ext]', // 保留原始文件名和扩展名
+                                outputPath: 'assets', // 输出文件的文件夹路径，可以根据需要更改
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
+    }
 };

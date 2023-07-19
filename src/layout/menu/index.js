@@ -80,6 +80,11 @@ const menu = {
 					MenuTitle: "平级接收人管理",
 					MenuPath: "/samelevel",
 				},
+				{
+					MenuID: "34",
+					MenuTitle: "原通讯录",
+					MenuPath: "/addressBook",
+				}
 			],
 		},
 		{
@@ -214,6 +219,11 @@ const menu = {
 					MenuTitle: "平级接收人管理",
 					MenuPath: "/samelevel",
 				},
+				{
+					MenuID: "34",
+					MenuTitle: "原通讯录",
+					MenuPath: "/addressBook",
+				}
 			],
 		},
 		{

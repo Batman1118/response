@@ -75,6 +75,35 @@
       <a-row :gutter="24">
         <a-col :span="12">
           <div style="display:flex;justify-content: space-between;align-items: center;">
+            <b>原通讯录接收人：</b>
+            <a-checkbox :checked="checkTxlAll" @change="checkTxlChange">
+              全选
+            </a-checkbox>
+          </div>
+          <a-form-model-item prop="txlUsers">
+            <a-tree-select
+                show-search
+                tree-checkable
+                style="width: 100%"
+                v-model="form.txlUsers"
+                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                placeholder="选择原通讯录接收人"
+                allow-clear
+                multiple
+                :maxTagCount="3"
+                @change="onTxlChanges"
+                @search="onTxlSearch"
+                @select="onTxlSelect"
+                :tree-data="addressBook"
+                :replaceFields="replaceTxlFields"
+            >
+            </a-tree-select>
+          </a-form-model-item>
+        </a-col>
+      </a-row>
+      <a-row :gutter="24">
+        <a-col :span="12">
+          <div style="display:flex;justify-content: space-between;align-items: center;">
 			    <b>选择接收单位：</b>
           <a-checkbox :checked="checkAll" @change="checkChange">
             全选
@@ -91,6 +120,7 @@
                 placeholder="选择工作通知接收单位"
                 allow-clear
                 multiple
+                :maxTagCount="3"
                 @change="onChanges"
                 @search="onSearch"
                 @select="onSelect"
@@ -109,7 +139,7 @@
           </div>
           <a-form-model-item>
             <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
-              <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
+              <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id" :maxTagCount="3">
                 {{ item.recipientName }}({{item.company}} {{item.phone}})
               </a-select-option>
             </a-select>
@@ -153,7 +183,8 @@
 </template>
 
 <script>
-import { getPeerRecipient, getAreaWithUserIfo } from '@/api/user'
+import {getPeerRecipient, getAreaWithUserIfo, getUserByGroup} from '@/api/user'
+import { TreeSelect } from 'ant-design-vue';
 import { massSend } from "@/api/send";
 import {getUserInfo} from "@/util/storage";
 	export default {
@@ -171,13 +202,23 @@ import {getUserInfo} from "@/util/storage";
           warningLevel: undefined,
           content: '',
           publishingUnit: '',
+          txlUsers: [],
           receiver: [],
           recipient: [],
+          addressBookRecipient: [],
           verticalRecipient: [],
           horizontalRecipient: []
         },
+        checkTxlAll: false,
         checkAll: false,
         checkSlAll: false,
+        addressBook: [],
+        replaceTxlFields: {
+          children:'userInfos',
+          title:'name',
+          key:'id',
+          value: 'id'
+        },
         areaUsers: [],
         replaceFields: {
           children:'children',
@@ -215,12 +256,42 @@ import {getUserInfo} from "@/util/storage";
     created() {
       const t = this
       t.form.publishingUnit = t.userInfo.company
+      t.getUserByGroup()
       t.getSameLevel()
       t.getAreaUsers()
     },
     computed: {
 		},
 		methods: {
+      // 获取原通讯录
+      async getUserByGroup(){
+        let t = this
+        let res = await getUserByGroup()
+        if(res.data.code == 100){
+          if(res.data.data){
+            let bookData = []
+            bookData = res.data.data
+            for(let i in bookData){
+              if(!bookData[i].userInfos || bookData[i].userInfos.length == 0){
+                bookData.splice(i, 1)
+              }
+            }
+            for(let j of bookData){
+              j.id = j.id.toString() + '-' + '1'
+              j.userInfos.map((item)=>{
+                  item.name = item.name + '('+ item.company + ' ' + item.phone + ')'
+                  return item
+              })
+            }
+            t.addressBook = bookData
+          }else{
+            console.log('暂无数据')
+          }
+        }else{
+          this.$message.warning(res.data.msg);
+        }
+      },
+
       // 获取同级接收人
       async getSameLevel(){
         let t = this
@@ -254,16 +325,34 @@ import {getUserInfo} from "@/util/storage";
         }
       },
 
+      //选择子部门部分
+      onTxlChanges(value,label,extra) {
+        const t = this
+        if(t.form.txlUsers.length == 0){
+          t.checkTxlAll = false
+        }
+      },
+      checkTxlChange(e) {
+        const t = this
+        this.checkTxlAll = !this.checkTxlAll
+        if(t.checkTxlAll == true){
+          let res = []
+          for(let i of t.addressBook){
+            if(i.userInfos && i.userInfos.length>0)
+            res = res.concat(...i.userInfos)
+          }
+          t.form.txlUsers = res.map(i=>i.id)
+        }else{
+          t.form.txlUsers = []
+        }
+      },
+
 			//选择子部门部分
 			onChanges(value,label,extra) {
         const t = this
         if(t.form.receiver.length == 0){
           t.checkAll = false
         }
-
-        // for(let i of value){
-        //   t.form.verticalRecipient = [...t.form.verticalRecipient,...t.findNodeById(t.areaUsers,i.value).users]
-        // }
       },
 
       checkChange(e) {
@@ -299,8 +388,20 @@ import {getUserInfo} from "@/util/storage";
       confirmSend(){
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
+            this.form.addressBookRecipient = []
             this.form.verticalRecipient = []
             this.form.horizontalRecipient = []
+
+            const address = this.form.txlUsers.map((item)=>
+                {
+                  this.findUserById(item).recipientType = 3
+                  const {addressBookGroupId,...data} = this.findUserById(item)
+                  data.name = data.name.split('(')[0]
+                  return data
+                }
+            )
+            this.form.addressBookRecipient = address
+
             const aList = this.form.receiver.map(item=>this.findNodeById(this.areaUsers,item.value)?.users)
             if(aList.includes(null)){
               this.$message.error('选择接收单位时存在无用户的单位')
@@ -313,6 +414,7 @@ import {getUserInfo} from "@/util/storage";
               const obj = {recipientUnit,recipientType:1,...rest}
               this.form.verticalRecipient.push(obj)
             }
+
             if(this.form.recipient.length>0){
               const bList = this.form.recipient.map(item => this.filteredOptions.find(i=>i.id == item))
               for(let i of bList){
@@ -322,13 +424,14 @@ import {getUserInfo} from "@/util/storage";
                 this.form.horizontalRecipient.push(noId)
               }
             }
-            const {receiver,recipient,...data} = this.form
+            const {txlUsers,receiver,recipient,...data} = this.form
             massSend(data).then( res =>{
               if(res.data.code == 100){
                 this.$message.success('信息群发成功')
                 this.$refs.ruleForm.clearValidate()
                 this.$refs.ruleForm.resetFields()
                 this.form.recipient = []
+                this.checkTxlAll = false
                 this.checkAll = false
                 this.checkSlAll = false
               }else{
@@ -348,6 +451,12 @@ import {getUserInfo} from "@/util/storage";
         // console.log(...arguments);
       },
       onSelect() {
+        // console.log(...arguments);
+      },
+      onTxlSearch() {
+        // console.log(...arguments);
+      },
+      onTxlSelect() {
         // console.log(...arguments);
       },
 			//选择平级部门部分
@@ -389,6 +498,19 @@ import {getUserInfo} from "@/util/storage";
           }
         }
         return null;
+      },
+
+      findUserById(id){
+        for(let i of this.addressBook){
+          if(i.userInfos && i.userInfos.length>0){
+            for(let j of i.userInfos){
+              if(j.id == id){
+                return j
+              }
+            }
+          }
+        }
+        return null
       },
 
       // 将树状数据所有id和name放入对象数组

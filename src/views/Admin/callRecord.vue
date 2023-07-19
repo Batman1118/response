@@ -27,7 +27,7 @@
             />
           </a-col>
           <a-col :span="4">
-            <a-button type="primary" @click="getData">查询</a-button>
+            <a-button type="primary" @click="searchData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
@@ -214,6 +214,11 @@ export default {
 
     timeOk(value) {
       console.log('onOk: ', value);
+    },
+
+    searchData(){
+      this.search.pageIndex = 1
+      this.getData()
     },
 
     resetSearch(){

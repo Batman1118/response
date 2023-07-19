@@ -30,7 +30,7 @@
             <a-input v-model="search.searchParams.publishingUnit" placeholder="单位名称" style="width: 100%"/>
           </a-col>
           <a-col :span="4">
-            <a-button type="primary" @click="getData">查询</a-button>
+            <a-button type="primary" @click="searchData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
@@ -63,9 +63,9 @@
             <a-button @click="viewFile(item)" type="link" v-for="(item,index) in attachment" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
           </div>
         </template >
-        <template #responseSituation="text">
-          <a-tag :color="text === 3 ? 'red' :text === 2? 'green':text === 1?'orange':'blue'">
-            {{text == 1 ? '待叫应' : text == 2 ?'已叫应':text == 3 ?'超时未叫应' : ''}}
+        <template #responsesRate="text">
+          <a-tag :color="Number(text.split('%')[0]) == 100 ? 'green' :Number(text.split('%')[0]) == 0? 'red':'orange'">
+            {{ text }}
           </a-tag>
         </template>
         <template #operation="text, record, index">
@@ -131,10 +131,10 @@ const columns = [{
     },
   },
   {
-    title: '叫应情况',
-    dataIndex: 'responseSituation',
+    title: '叫应率',
+    dataIndex: 'responsesRate',
     scopedSlots: {
-      customRender: 'responseSituation'
+      customRender: 'responsesRate'
     }, //设置定制化表格数据
   },
   {
@@ -258,6 +258,11 @@ export default {
 
     timeOk(value) {
       console.log('onOk: ', value);
+    },
+
+    searchData(){
+      this.search.pageIndex = 1
+      this.getData()
     },
 
     resetSearch(){

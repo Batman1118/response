@@ -30,7 +30,7 @@
             />
           </a-col>
           <a-col :span="4">
-            <a-button type="primary" @click="getData">查询</a-button>
+            <a-button type="primary" @click="searchData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
         </a-row>
@@ -270,6 +270,11 @@ import {getUserInfo} from "@/util/storage";
             this.$message.error('获取文件失败')
           }
         })
+      },
+
+      searchData(){
+        this.search.pageIndex = 1
+        this.getData()
       },
 
       resetSearch(){

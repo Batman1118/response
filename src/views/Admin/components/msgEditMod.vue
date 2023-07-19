@@ -97,6 +97,7 @@
             </div>
             <a-form-model-item prop="receiver" style="margin-bottom: 6px">
               <a-tree-select
+                  :maxTagCount="3"
                   show-search
                   tree-checkable
                   treeCheckStrictly
@@ -127,7 +128,7 @@
               </a-checkbox>
             </div>
             <a-form-model-item>
-              <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle" :disabled="disable">
+              <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle" :disabled="disable" :maxTagCount="3">
                 <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id">
                   {{ item.recipientName }}({{item.company}} {{item.phone}})
                 </a-select-option>
