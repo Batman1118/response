@@ -25,8 +25,9 @@
             </div>
             <a-divider type="vertical" />
             <div class="tit">
-              任务ID：<span>{{item.id}}</span>
+              任务ID：<span>{{item.id}}</span>   
             </div>
+			发送人数：{{item.recipients.length}}
           </template>
           <p>
             {{item.content}}

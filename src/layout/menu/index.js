@@ -164,7 +164,7 @@ const menu = {
 			},
 			{
 				MenuID: "14",
-				MenuTitle: "我发布的",
+				MenuTitle: "本级发出",
 				MenuPath: "/release"
 			},
 			{

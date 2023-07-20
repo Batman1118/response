@@ -31,7 +31,7 @@ const routes = [
 	  {
 	    path: '/release',
 	    name: 'release',
-	    meta: { title: '我发布的' },
+	    meta: { title: '本级发出' },
 	    component: () => import('@/views/Admin/release'),
 	  },
 	  {
