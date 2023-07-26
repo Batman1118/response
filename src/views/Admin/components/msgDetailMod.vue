@@ -30,11 +30,11 @@
       </a-row>
       <a-row :gutter="24" v-if="details.publishingUnit"><a-col :span="4">发布单位</a-col><a-col :span="14">{{details.publishingUnit}}</a-col></a-row>
       <a-row :gutter="24" v-if="details.content"><a-col :span="4">信息内容</a-col><a-col :span="14">{{details.content}}</a-col></a-row>
-      <a-row :gutter="24">
+      <a-row :gutter="24" v-if="details.recipients && details.recipients.length>0">
         <a-col :span="4">接收人</a-col>
         <a-col :span="20">
-		  <b>本次共发送信息给 {{details.recipients.length}}人：</b><br/><br/>
-          {{details.recipients.map(i=>i.realName + '(' + i.phone + ')').join(',')}}
+        <b>本次共发送信息给 {{details.recipients.length}}人：</b><br/><br/>
+        {{details.recipients.map(i=>i.realName + '(' + i.phone + ')').join(',')}}
         </a-col>
       </a-row>
       <a-row :gutter="24" v-if="details.attachments && details.attachments.length > 0"><a-col :span="4">附件内容</a-col>
