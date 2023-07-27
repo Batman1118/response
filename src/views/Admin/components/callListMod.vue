@@ -7,9 +7,13 @@
       cancelText="取消"
       @cancel="handleCancel"
   >
-    <a-table :columns="columns" :data-source="data" bordered :pagination="pagination">
+    <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
       <template #index="text,record,index">
         {{ index + 1 }}
+      </template>
+      <template #receiveUnit="name,record">
+        <span v-if="unitType == 3">{{ name }}</span>
+        <span v-else style="cursor: pointer;color: #1890ff" @click="digData(record.forwardWarnInfoId,record.unittype)">{{ name }}</span>
       </template>
       <template #warningLevel="text">
         <a-tag :color="text === 3 ? 'yellow' :text === 2? 'orange':text === 1?'red':'blue'">
@@ -28,17 +32,29 @@
           {{text == 1 ? '待叫应' : text == 2 ?'已叫应':text == 3 ?'超时未叫应' : ''}}
         </a-tag>
       </template>
+      <template #forwardRate="text,record">
+          {{record.forwardStatus == 1?text: '--' }}
+      </template>
+      <template #operation="text, record, index">
+        <a-button type="primary" @click="viewDetail(record.id)">查看详情</a-button>
+      </template>
     </a-table>
+    <call-list-mod ref="callList"></call-list-mod>
   </a-modal>
 </template>
 
 <script>
 import {getResponseById} from "@/api/list";
+import callListMod from "@/views/Admin/components/callListMod";
+import msgDetailMod from "@/views/Admin/components/msgDetailMod";
+import {responseMeasure} from "@/api/new";
 export default {
-  name: 'callListMod',
+  name: 'call-list-mod',
+  components: { callListMod },
   data () {
     return {
       visible: false,
+      unitType: null,
       search:{
         pageIndex: 1,
         pageSize: 10,
@@ -59,7 +75,6 @@ export default {
           {
         title: '序号',
         dataIndex: 'index',
-        width: '8%',
         scopedSlots: {
           customRender: 'index'
         }
@@ -67,17 +82,15 @@ export default {
         {
           title: '接收人单位',
           dataIndex: 'receiveUnit',
-          width: '20%'
+          scopedSlots: { customRender: 'receiveUnit' }
         },
         {
           title: '接收人',
           dataIndex: 'recipienterName',
-          width: '20%'
         },
         {
           title: '级别',
           dataIndex: 'unittype',
-          width: '12%',
           scopedSlots: {
             customRender: 'unittype'
           },
@@ -85,10 +98,23 @@ export default {
         {
           title: '叫应状态',
           dataIndex: 'responseStatus',
-          width: '15%',
           scopedSlots: {
             customRender: 'responseStatus'
-          } //设置定制化表格数据
+          }
+        },
+        {
+          title: '转发叫应率',
+          dataIndex: 'forwardRate',
+          scopedSlots: {
+            customRender: 'forwardRate'
+          }
+        },
+        {
+          title: '响应措施',
+          dataIndex: 'operation',
+          scopedSlots: {
+            customRender: 'operation'
+          },
         }
       ]
     }
@@ -97,11 +123,17 @@ export default {
     const t = this
   },
   methods:{
-    openMod(id){
+    openMod(id,type){
       const t = this
       t.visible = true
+      t.unitType = type
       t.search.searchParams.warnInfoId = id
       t.getData()
+      if(type == 3){
+        t.columns = t.columns.filter(i=>i.dataIndex !== 'forwardRate')
+      }else{
+        t.columns = t.columns.filter(i=>i.dataIndex !== 'operation')
+      }
     },
     async getData(){
       const t = this
@@ -112,6 +144,25 @@ export default {
       }else{
         this.$message.error(res.data.msg)
       }
+    },
+
+    async viewDetail(id){
+      const t = this
+      const res = await responseMeasure({id:id})
+      if(res.data.code == 100){
+        const data = res.data.data
+        if(!data.baseMeasureIds){
+          t.$message.error('该记录暂无响应措施')
+        }else{
+          console.log('666')
+        }
+      }else{
+        this.$message.error(res.data.msg)
+      }
+    },
+
+    digData(id,type){
+      this.$refs.callList.openMod(id,type)
     },
 
     onPageChange(page, pageSize) {

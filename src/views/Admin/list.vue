@@ -262,10 +262,11 @@ import {getUserInfo} from "@/util/storage";
             let blob = new Blob([res.data],{type: res.data.type})
             link.style.display = "none";
             link.href = URL.createObjectURL(blob); // 创建URL
-            link.setAttribute("download", item.attachmentName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            window.open(link.href)
+            // link.setAttribute("download", item.attachmentName);
+            // document.body.appendChild(link);
+            // link.click();
+            // document.body.removeChild(link);
           } else {
             this.$message.error('获取文件失败')
           }
@@ -304,6 +305,15 @@ import {getUserInfo} from "@/util/storage";
             responseMsg(id).then(res=>{
               if(res.data.code == 100){
                 t.$message.success('信息叫应成功');
+                t.search = {
+                  pageIndex: 1,
+                  pageSize: 10,
+                  searchParams:{
+                    responseStatus: null,
+                    startTime: '',
+                    endTime: ''
+                  }
+                },
                 t.getData()
               }else{
                 t.$message.warning(res.data.msg);
@@ -321,7 +331,7 @@ import {getUserInfo} from "@/util/storage";
         getReviewDetailByWorker(data.warnInfoId).then(res=>{
           if(res.data.code == 100){
             if(res.data.data){
-              t.$refs.msgEdit.openMod(type,res.data.data)
+              t.$refs.msgEdit.openMod(type,res.data.data,data.id)
             }else{
               t.$message.error('查询信息详情失败')
             }

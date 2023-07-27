@@ -30,11 +30,19 @@
       </a-row>
       <a-row :gutter="24" v-if="details.publishingUnit"><a-col :span="4">发布单位</a-col><a-col :span="14">{{details.publishingUnit}}</a-col></a-row>
       <a-row :gutter="24" v-if="details.content"><a-col :span="4">信息内容</a-col><a-col :span="14">{{details.content}}</a-col></a-row>
+      <a-row :gutter="24" v-if="details.directViewUrl"><a-col :span="4">直览附件</a-col><a-col :span="14" style="border: none"><a :href="details.directViewUrl" target="_blank" class="urlClick">{{details.directViewUrl}}</a></a-col></a-row>
       <a-row :gutter="24" v-if="details.recipients && details.recipients.length>0">
         <a-col :span="4">接收人</a-col>
         <a-col :span="20">
         <b>本次共发送信息给 {{details.recipients.length}}人：</b><br/><br/>
         {{details.recipients.map(i=>i.realName + '(' + i.phone + ')').join(',')}}
+        </a-col>
+      </a-row>
+      <a-row :gutter="24" v-if="details.acceptingUnitIds && details.acceptingUnitIds.length>0">
+        <a-col :span="4">接收人</a-col>
+        <a-col :span="20">
+          <b>本次共发送信息给 {{details.acceptingUnitIds.length}}人：</b><br/><br/>
+          {{details.acceptingUnitIds.map(i=>i.recipienterName + '(' + i.recipienterPhone + ')').join(',')}}
         </a-col>
       </a-row>
       <a-row :gutter="24" v-if="details.attachments && details.attachments.length > 0"><a-col :span="4">附件内容</a-col>
@@ -104,10 +112,11 @@ export default {
           let blob = new Blob([res.data],{type: res.data.type})
           link.style.display = "none";
           link.href = URL.createObjectURL(blob); // 创建URL
-          link.setAttribute("download", item.attachementName);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          window.open(link.href)
+          // link.setAttribute("download", item.attachementName);
+          // document.body.appendChild(link);
+          // link.click();
+          // document.body.removeChild(link);
         } else {
           this.$message.error('获取文件失败')
         }
@@ -178,5 +187,8 @@ export default {
       }
     }
   }
+}
+.urlClick:hover{
+  text-decoration: underline;
 }
 </style>

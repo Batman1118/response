@@ -57,6 +57,14 @@
         <a-form-model-item prop="content">
           <a-textarea v-model="form.content" placeholder="请输入短信通知内容部分" :auto-size="{ minRows: 3, maxRows: 5 }" :readOnly="disable"/>
         </a-form-model-item>
+        <a-row v-if="userInfo.unittype == 1 || title == '信息转发' || title == '信息审核'||title == '信息详情'">
+          <a-col :span="24" style="display: flex;align-items: center">
+            <b style="margin-bottom: 24px">直览附件URL：</b>
+            <a-form-model-item style="width: 50%">
+              <a-textarea :readonly="title == '信息转发'||title == '信息审核'||title == '信息详情'?true:false" v-model="form.directViewUrl" placeholder="请输入url信息" :auto-size="{ minRows: 1, maxRows: 3 }"/>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
         <a-row>
           <a-col :span="12">
             <a-upload
@@ -116,9 +124,9 @@
               >
               </a-tree-select>
             </a-form-model-item>
-            <a-checkbox :checked="withLeaders" @change="isAddLeaders" style="margin-bottom: 24px" :disabled="disable">
-              同时发信息给本级领导
-            </a-checkbox>
+<!--            <a-checkbox :checked="withLeaders" @change="isAddLeaders" style="margin-bottom: 24px" :disabled="disable">-->
+<!--              同时发信息给本级领导-->
+<!--            </a-checkbox>-->
           </a-col>
           <a-col :span="12">
             <div style="display:flex;justify-content: space-between;align-items: center;">
@@ -206,6 +214,7 @@ export default {
         disasterType: undefined,
         warningLevel: undefined,
         content: '',
+        directViewUrl: '',
         publishingUnit: '',
         districtId: null,
         attachments: [],
@@ -277,7 +286,7 @@ export default {
   },
   computed: {},
   methods: {
-    openMod(type,data){
+    openMod(type,data,id){
       const t = this
       t.getLeaders()
       t.form.acceptingUnitIds = []
@@ -332,6 +341,10 @@ export default {
         t.form.warningLevel = data.warningLevel
         t.form.content = data.content
         t.form.timeout = data.timeout
+        t.form.forwardWarnInfoLogId = id
+        t.form.forwardStatus = 1
+        t.form.forwardPath = data.forwardPath
+        t.form.directViewUrl = data.directViewUrl
         if(data.attachments && data.attachments.length>0){
           t.fileList = data.attachments.map((i)=>{
             return {
@@ -602,10 +615,11 @@ export default {
           let blob = new Blob([res.data],{type: res.data.type})
           link.style.display = "none";
           link.href = URL.createObjectURL(blob); // 创建URL
-          link.setAttribute("download", file.name);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          window.open(link.href)
+          // link.setAttribute("download", file.name);
+          // document.body.appendChild(link);
+          // link.click();
+          // document.body.removeChild(link);
         } else {
           this.$message.error('获取文件失败')
         }

@@ -55,6 +55,14 @@
 					<a-textarea v-model="form.content" placeholder="请输入短信通知内容部分"
 						:auto-size="{ minRows: 3, maxRows: 5 }" />
 				</a-form-model-item>
+        <a-row v-if="userInfo.unittype == 1">
+          <a-col :span="24" style="display: flex;align-items: center">
+            <b style="margin-bottom: 24px">直览附件URL：</b>
+            <a-form-model-item prop="directViewUrl" style="width: 50%">
+              <a-textarea v-model="form.directViewUrl" placeholder="请输入url信息" :auto-size="{ minRows: 1, maxRows: 3 }"/>
+            </a-form-model-item>
+          </a-col>
+        </a-row>
 				<a-row>
 					<a-col :span="12">
 						<a-upload :action="uploadUrl" :file-list="fileList" @change="fileChange" :headers="header"
@@ -175,6 +183,7 @@
 					disasterType: undefined,
 					warningLevel: undefined,
 					content: '',
+          directViewUrl: '',
 					publishingUnit: '',
 					districtId: null,
 					attachments: [],

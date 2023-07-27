@@ -73,12 +73,6 @@
       <msg-detail-mod ref="msgDetail"></msg-detail-mod>
       <call-list-mod ref="callList" @refresh="getData"></call-list-mod>
     </div>
-	  <!-- 对话框 -->
-	  <a-modal title="查看叫应详情" 
-	  okText="确认"
-	  cancelText="关闭"
-	  :visible="visible" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleOk">
-	  </a-modal>
   </div>
 </template>
 <script>
@@ -153,7 +147,7 @@ import {getUserInfo} from "@/util/storage";
 			scopedSlots: {
 				customRender: 'operation'
 			},
-		},
+		}
 	];
 	export default {
     name: 'release',
@@ -255,10 +249,11 @@ import {getUserInfo} from "@/util/storage";
             let blob = new Blob([res.data],{type: res.data.type})
             link.style.display = "none";
             link.href = URL.createObjectURL(blob); // 创建URL
-            link.setAttribute("download", item.attachmentName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            window.open(link.href)
+            // link.setAttribute("download", item.attachmentName);
+            // document.body.appendChild(link);
+            // link.click();
+            // document.body.removeChild(link);
           } else {
             this.$message.error('获取文件失败')
           }
@@ -283,11 +278,6 @@ import {getUserInfo} from "@/util/storage";
         t.timeRange = []
         t.getData()
       },
-
-			//弹出层
-			showModal() {
-				this.visible = true;
-			},
 
 			handleOk(e) {
 				this.visible = false;

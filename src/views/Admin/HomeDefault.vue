@@ -33,7 +33,7 @@
         <Projecting />
         <Dynamic style="margin-top: 20px"/>
       </div>
-      <div class="left" v-if="userInfo.role.id == 2">
+      <div class="left" v-if="userInfo.role.id == 2 || userInfo.role.id == 4">
         <Review />
       </div>
       <div class="right">

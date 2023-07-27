@@ -112,6 +112,12 @@ const routes = [
 			meta: { title: '短信平台设置' },
 			component: () => import('@/views/Admin/smsSetting'),
 		},
+		{
+			path: '/reactionManage',
+			name: 'reactionManage',
+			meta: { title: '响应措施管理' },
+			component: () => import('@/views/Admin/reactionManage'),
+		},
 		// {
 		// 	path: '/menu',
 		// 	name: 'menu',

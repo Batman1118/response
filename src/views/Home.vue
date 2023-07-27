@@ -2,7 +2,8 @@
 	<div>
 		<a-layout id="components-layout-demo-custom-trigger" :style="{ height: '100vh' }">
 			<a-layout-sider v-model="collapsed" :trigger="null" collapsible>
-				<div class="logo">{{ collapsed ? collapsed : '预警响应系统' }}</div>
+        <div class="logo" v-if="!collapsed">{{ '预警响应系统' }}</div>
+        <div class="logo" v-else><a-icon type="alert" /></div>
 				<menuSider />
 			</a-layout-sider>
 			<a-layout>

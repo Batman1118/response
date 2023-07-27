@@ -68,6 +68,9 @@
       <a-form-model-item label="角色" prop="roleId">
         <a-select v-model="form.roleId" placeholder="角色">
           <a-select-option :value="2">
+            审批领导
+          </a-select-option>
+          <a-select-option :value="4">
             领导
           </a-select-option>
           <a-select-option :value="3">

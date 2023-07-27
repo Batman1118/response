@@ -246,10 +246,11 @@ export default {
           let blob = new Blob([res.data],{type: res.data.type})
           link.style.display = "none";
           link.href = URL.createObjectURL(blob); // 创建URL
-          link.setAttribute("download", item.attachmentName);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          window.open(link.href)
+          // link.setAttribute("download", item.attachmentName);
+          // document.body.appendChild(link);
+          // link.click();
+          // document.body.removeChild(link);
         } else {
           this.$message.error('获取文件失败')
         }
