@@ -51,15 +51,11 @@ export default {
           value: 1
         },
         {
-          name: '洪涝',
-          value: 2
-        },
-        {
           name: '气象',
           value: 3
         },
         {
-          name: '泥石流',
+          name: '地质灾害',
           value: 4
         },
         {

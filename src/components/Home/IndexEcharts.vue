@@ -21,28 +21,48 @@ export default {
       const res = await getWarningData()
       if(res.data.code == 100){
         let data = res.data.data
-        let redData = [0,0,0,0,0,0]
-        let orangeData = [0,0,0,0,0,0]
-        let yellowData = [0,0,0,0,0,0]
-        let blueData = [0,0,0,0,0,0]
+        let redData = [0,0,0,0,0]
+        let orangeData = [0,0,0,0,0]
+        let yellowData = [0,0,0,0,0]
+        let blueData = [0,0,0,0,0]
         if(data[1] && data[1].length>0){
           for(let i of data[1]){
-            redData[i.disasterType - 1] = i.count
+            // redData[i.disasterType - 1] = i.count
+            if(i.disasterType == 1){redData[0] = i.count}
+            if(i.disasterType == 3){redData[1] = i.count}
+            if(i.disasterType == 4){redData[2] = i.count}
+            if(i.disasterType == 5){redData[3] = i.count}
+            if(i.disasterType == 6){redData[4] = i.count}
           }
         }
         if(data[2] && data[2].length>0){
           for(let i of data[2]){
-            orangeData[i.disasterType - 1] = i.count
+            // orangeData[i.disasterType - 1] = i.count
+            if(i.disasterType == 1){orangeData[0] = i.count}
+            if(i.disasterType == 3){orangeData[1] = i.count}
+            if(i.disasterType == 4){orangeData[2] = i.count}
+            if(i.disasterType == 5){orangeData[3] = i.count}
+            if(i.disasterType == 6){orangeData[4] = i.count}
           }
         }
         if(data[3] && data[3].length>0){
           for(let i of data[3]){
-            yellowData[i.disasterType - 1] = i.count
+            // yellowData[i.disasterType - 1] = i.count
+            if(i.disasterType == 1){yellowData[0] = i.count}
+            if(i.disasterType == 3){yellowData[1] = i.count}
+            if(i.disasterType == 4){yellowData[2] = i.count}
+            if(i.disasterType == 5){yellowData[3] = i.count}
+            if(i.disasterType == 6){yellowData[4] = i.count}
           }
         }
         if(data[4] && data[4].length>0){
           for(let i of data[4]){
-            blueData[i.disasterType - 1] = i.count
+            // blueData[i.disasterType - 1] = i.count
+            if(i.disasterType == 1){blueData[0] = i.count}
+            if(i.disasterType == 3){blueData[1] = i.count}
+            if(i.disasterType == 4){blueData[2] = i.count}
+            if(i.disasterType == 5){blueData[3] = i.count}
+            if(i.disasterType == 6){blueData[4] = i.count}
           }
         }
         let whole = redData.concat(orangeData,yellowData,blueData)
@@ -78,9 +98,9 @@ export default {
           nameGap: 10,
           indicator: [
             { name: "地震", max: maxNum },
-            { name: "洪涝", max: maxNum },
+            // { name: "洪涝", max: maxNum },
             { name: "气象", max: maxNum },
-            { name: "泥石流", max: maxNum },
+            { name: "地质灾害", max: maxNum },
             { name: "水旱", max: maxNum },
             { name: "森林草原火灾", max: maxNum }
           ],

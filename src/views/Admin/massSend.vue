@@ -228,9 +228,8 @@ import {getUserInfo} from "@/util/storage";
         },
         riskOptions: [
           {name: '地震',value: 1},
-          {name: '洪涝',value: 2},
           {name: '气象',value: 3},
-          {name: '泥石流',value: 4},
+          {name: '地质灾害',value: 4},
           {name: '水旱',value: 5},
           {name: '森林草原火灾',value: 6}
         ],
