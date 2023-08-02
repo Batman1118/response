@@ -76,8 +76,8 @@
 <!--          </div>-->
 <!--        </template>-->
         <template #operation="text, record, index">
-          <a-button type="primary" v-if="record.responseStatus == 1" style="margin-right: 12px" @click="confirmResponce(record.id)">确认已收到</a-button>
-          <a-button type="primary" @click="openMod('repost',record)">转发</a-button>
+          <a-button type="primary" v-if="record.responseStatus == 1 && userInfo.unittype !== 4" style="margin-right: 12px" @click="confirmResponce(record.id)">确认已收到</a-button>
+          <a-button type="primary" @click="openMod('repost',record)" v-if="userInfo.unittype !== 4">转发</a-button>
           <a-button type="link" @click="openDetails(record,record.warnInfoId)">查看详情</a-button>
         </template>
       </a-table>

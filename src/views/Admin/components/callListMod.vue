@@ -6,6 +6,7 @@
       width="50%"
       cancelText="取消"
       @cancel="handleCancel"
+      @ok="handleCancel"
   >
     <a-table :columns="columns" :data-source="data" bordered :pagination="pagination" :rowKey="record=>record.id">
       <template #index="text,record,index">
@@ -40,6 +41,34 @@
       </template>
     </a-table>
     <call-list-mod ref="callList"></call-list-mod>
+    <a-modal
+        title="响应举措"
+        centered
+        :visible="detailVisible"
+        width="50%"
+        cancelText="取消"
+        @cancel="detailCancel"
+        @ok="detailCancel"
+    >
+      <div class="detail-mod">
+        <a-row :gutter="24" v-if="details.title"><a-col :span="4">标题</a-col><a-col class="noBorder" :span="14" style="font-size: 24px;font-weight: bolder">{{details.title}}</a-col></a-row>
+        <a-row :gutter="24" v-if="details.publishingUnit"><a-col :span="4">发布单位</a-col><a-col :span="14">{{details.publishingUnit}}</a-col></a-row>
+        <a-row :gutter="24" v-if="details.publishingTime"><a-col :span="4">发布时间</a-col><a-col :span="14">{{details.publishingTime}}</a-col></a-row>
+        <a-row :gutter="24" v-if="details.baseMeasures && details.baseMeasures.length > 0"><a-col :span="4">基础措施</a-col>
+          <a-col :span="14" class="noBorder">
+            <div v-for="(item,index) in details.baseMeasures" :key="index">
+              {{index+1}}、{{item}}
+            </div>
+          </a-col>
+        </a-row>
+        <a-row :gutter="24" v-if="details.responseMeasure"><a-col :span="4">响应反馈</a-col><a-col :span="14">{{details.responseMeasure}}</a-col></a-row>
+        <a-row :gutter="24" v-if="details.attachments && details.attachments.length > 0"><a-col :span="4">附件内容</a-col>
+          <a-col :span="14" class="noBorder">
+            <a-button @click="viewFile(item)" type="link" v-for="(item,index) in details.attachments" :key="index"><a-icon type="paper-clip"/>{{item.attachmentName}}</a-button>
+          </a-col>
+        </a-row>
+      </div>
+    </a-modal>
   </a-modal>
 </template>
 
@@ -48,12 +77,15 @@ import {getResponseById} from "@/api/list";
 import callListMod from "@/views/Admin/components/callListMod";
 import msgDetailMod from "@/views/Admin/components/msgDetailMod";
 import {responseMeasure} from "@/api/new";
+import axios from "axios";
+import Cookies from "js-cookie";
 export default {
   name: 'call-list-mod',
   components: { callListMod },
   data () {
     return {
       visible: false,
+      detailVisible: false,
       unitType: null,
       search:{
         pageIndex: 1,
@@ -63,6 +95,7 @@ export default {
         }
       },
       data: [],
+      details: {},
       pagination: {
         current: 1,
         defaultCurrent: 1,
@@ -151,10 +184,11 @@ export default {
       const res = await responseMeasure({id:id})
       if(res.data.code == 100){
         const data = res.data.data
-        if(!data.baseMeasureIds){
+        if(!data.baseMeasures || data.baseMeasures.length == 0){
           t.$message.error('该记录暂无响应措施')
         }else{
-          console.log('666')
+          t.details = data
+          t.detailVisible = true
         }
       }else{
         this.$message.error(res.data.msg)
@@ -162,7 +196,11 @@ export default {
     },
 
     digData(id,type){
-      this.$refs.callList.openMod(id,type)
+      if(id){
+        this.$refs.callList.openMod(id,type)
+      }else{
+        this.$message.error('暂无下级叫应数据')
+      }
     },
 
     onPageChange(page, pageSize) {
@@ -176,13 +214,75 @@ export default {
       const t = this
       t.visible = false;
     },
+    detailCancel(e){
+      this.detailVisible = false
+    },
     onChange(value) {
       console.log(value);
-    }
+    },
+    viewFile(item){
+      const t = this
+      const { baseUrl } = require('../../../../config/env.' + process.env.NODE_ENV)
+      axios.get(baseUrl + item.attachment,{headers:{'Content-Type': 'application/json','tk': `${Cookies.get('resTk')}`,'uid':`${Cookies.get('resUid')}`},responseType: 'blob'}).then(res=>{
+        if (res) {
+          const link = document.createElement('a')
+          let blob = new Blob([res.data],{type: res.data.type})
+          link.style.display = "none";
+          link.href = URL.createObjectURL(blob); // 创建URL
+          window.open(link.href)
+          // link.setAttribute("download", item.attachementName);
+          // document.body.appendChild(link);
+          // link.click();
+          // document.body.removeChild(link);
+        } else {
+          this.$message.error('获取文件失败')
+        }
+      })
+    },
   }
 }
 </script>
 
 <style lang="less" scoped>
+.detail-mod{
+  font-size: 16px;
 
+  .ant-row{
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+
+    &:first-of-type{
+      margin-bottom: 12px;
+    }
+
+    .ant-col{
+      &:first-of-type{
+        text-align: right;
+      }
+
+      &:last-of-type{
+        border: 1px solid #d9d9d9;
+        padding: 5px 10px;
+      }
+    }
+
+    .noBorder{
+      border: none !important;
+      padding: 5px 10px;
+    }
+
+    .table{
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid @blackBorder;
+      &:last-of-type{
+        border-bottom: none;
+      }
+      &>div{
+        padding: 5px 10px;
+      }
+    }
+  }
+}
 </style>
