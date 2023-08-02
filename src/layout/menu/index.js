@@ -91,11 +91,17 @@ const menu = {
 			MenuTitle: "设置",
 			Icon: "setting",
 			MenuID: "4",
-			Children: [{
-				MenuID: "41",
-				MenuTitle: "用户管理",
-				MenuPath: "/user",
-			},
+			Children: [
+				{
+					MenuID: "43",
+					MenuTitle: "响应措施管理",
+					MenuPath: "/reactionManage",
+				},
+				{
+					MenuID: "41",
+					MenuTitle: "用户管理",
+					MenuPath: "/user",
+				},
 				{
 					MenuID: "42",
 					MenuTitle: "短信平台设置",
@@ -230,11 +236,17 @@ const menu = {
 			MenuTitle: "设置",
 			Icon: "setting",
 			MenuID: "4",
-			Children: [{
-				MenuID: "41",
-				MenuTitle: "用户管理",
-				MenuPath: "/user",
-			},
+			Children: [
+				{
+					MenuID: "43",
+					MenuTitle: "响应措施管理",
+					MenuPath: "/reactionManage",
+				},
+				{
+					MenuID: "41",
+					MenuTitle: "用户管理",
+					MenuPath: "/user",
+				},
 				{
 					MenuID: "42",
 					MenuTitle: "短信平台设置",
