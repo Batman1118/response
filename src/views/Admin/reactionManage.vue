@@ -61,6 +61,7 @@ export default {
         },
         {
           title: '操作',
+          width: '12%',
           key: 'action',
           scopedSlots: { customRender: 'action' }
         },

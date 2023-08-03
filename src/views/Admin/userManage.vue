@@ -28,7 +28,7 @@
           <a-col :span="4">
             <a-input v-model="search.searchParams.realName" placeholder="姓名" style="width: 100%"/>
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="getUserList">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -148,6 +148,7 @@ export default {
         {
           title: '操作',
           key: 'action',
+          width: '18%',
           scopedSlots: { customRender: 'action' },
         },
       ],

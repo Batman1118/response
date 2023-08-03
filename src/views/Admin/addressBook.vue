@@ -1,12 +1,12 @@
 <template>
   <div class="inner">
     <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
-      <a-col :span="8">
+      <a-col :span="6">
         <a-button v-if="unittype && unittype !== null" type="primary" @click="editData('add',{})">新增</a-button>
         <a-button v-if="unittype && unittype !== null" type="primary" @click="visible = true" style="margin: 0 12px">导入通讯录表</a-button>
         <a-button v-if="unittype && unittype !== null" type="primary" @click="openGroup()">分组管理</a-button>
       </a-col>
-      <a-col :span="16">
+      <a-col :span="18">
         <a-row type="flex" justify="end" :gutter="14">
           <a-col :span="6">
             <a-input v-model="search.searchParams.company" placeholder="单位名称" style="width: 100%"/>
@@ -16,7 +16,7 @@
               <a-select-option v-for="item in groupData" :value="item.id" :key="item.id">{{item.name}}</a-select-option>
             </a-select>
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="searchData()">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -97,6 +97,7 @@ export default {
         {
           title: '操作',
           key: 'action',
+          width: '15%',
           scopedSlots: { customRender: 'action' }
         },
       ],

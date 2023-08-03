@@ -26,7 +26,7 @@
                 style="width: 100%"
             />
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="getData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -107,7 +107,6 @@ import {getUserInfo} from "@/util/storage";
     {
       title: '灾种',
       dataIndex: 'disasterType',
-      width: '8%',
       scopedSlots: {
         customRender: 'disasterType'
       }
@@ -123,7 +122,6 @@ import {getUserInfo} from "@/util/storage";
 		{
 			title: '信息标题',
 			dataIndex: 'title',
-			width: '16%',
 		},
 		{
 			title: '附件',
@@ -136,7 +134,6 @@ import {getUserInfo} from "@/util/storage";
 		{
 			title: '叫应情况',
 			dataIndex: 'responsesRate',
-			width: '10%',
 			scopedSlots: {
 				customRender: 'responsesRate'
 			}, //设置定制化表格数据
@@ -144,6 +141,7 @@ import {getUserInfo} from "@/util/storage";
 		{
 			title: '操作',
 			dataIndex: 'operation',
+      width: '14%',
 			scopedSlots: {
 				customRender: 'operation'
 			},

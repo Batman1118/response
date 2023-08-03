@@ -101,51 +101,51 @@
           </a-form-model-item>
         </a-col>
       </a-row>
-      <a-row :gutter="24">
-        <a-col :span="12">
-          <div style="display:flex;justify-content: space-between;align-items: center;">
-			    <b>选择接收单位：</b>
-          <a-checkbox :checked="checkAll" @change="checkChange">
-            全选
-          </a-checkbox>
-          </div>
-          <a-form-model-item prop="receiver">
-            <a-tree-select
-                show-search
-                tree-checkable
-                treeCheckStrictly
-                style="width: 100%"
-                v-model="form.receiver"
-                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                placeholder="选择工作通知接收单位"
-                allow-clear
-                multiple
-                :maxTagCount="3"
-                @change="onChanges"
-                @search="onSearch"
-                @select="onSelect"
-                :tree-data="areaUsers"
-                :replaceFields="replaceFields"
-              >
-            </a-tree-select>
-          </a-form-model-item>
-        </a-col>
-        <a-col :span="12">
-          <div style="display:flex;justify-content: space-between;align-items: center;">
-            <b>平级接收人选择：</b>
-            <a-checkbox :checked="checkSlAll" @change="checkSlChange">
-              全选
-            </a-checkbox>
-          </div>
-          <a-form-model-item>
-            <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">
-              <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id" :maxTagCount="3">
-                {{ item.recipientName }}({{item.company}} {{item.phone}})
-              </a-select-option>
-            </a-select>
-          </a-form-model-item>
-        </a-col>
-      </a-row>
+<!--      <a-row :gutter="24">-->
+<!--        <a-col :span="12">-->
+<!--          <div style="display:flex;justify-content: space-between;align-items: center;">-->
+<!--			    <b>选择接收单位：</b>-->
+<!--          <a-checkbox :checked="checkAll" @change="checkChange">-->
+<!--            全选-->
+<!--          </a-checkbox>-->
+<!--          </div>-->
+<!--          <a-form-model-item prop="receiver">-->
+<!--            <a-tree-select-->
+<!--                show-search-->
+<!--                tree-checkable-->
+<!--                treeCheckStrictly-->
+<!--                style="width: 100%"-->
+<!--                v-model="form.receiver"-->
+<!--                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"-->
+<!--                placeholder="选择工作通知接收单位"-->
+<!--                allow-clear-->
+<!--                multiple-->
+<!--                :maxTagCount="3"-->
+<!--                @change="onChanges"-->
+<!--                @search="onSearch"-->
+<!--                @select="onSelect"-->
+<!--                :tree-data="areaUsers"-->
+<!--                :replaceFields="replaceFields"-->
+<!--              >-->
+<!--            </a-tree-select>-->
+<!--          </a-form-model-item>-->
+<!--        </a-col>-->
+<!--        <a-col :span="12">-->
+<!--          <div style="display:flex;justify-content: space-between;align-items: center;">-->
+<!--            <b>平级接收人选择：</b>-->
+<!--            <a-checkbox :checked="checkSlAll" @change="checkSlChange">-->
+<!--              全选-->
+<!--            </a-checkbox>-->
+<!--          </div>-->
+<!--          <a-form-model-item>-->
+<!--            <a-select mode="multiple" placeholder="选择平级接收单位" v-model="form.recipient" @change="handle">-->
+<!--              <a-select-option v-for="item in filteredOptions" :key="item.id" :value="item.id" :maxTagCount="3">-->
+<!--                {{ item.recipientName }}({{item.company}} {{item.phone}})-->
+<!--              </a-select-option>-->
+<!--            </a-select>-->
+<!--          </a-form-model-item>-->
+<!--        </a-col>-->
+<!--      </a-row>-->
 <!--			<div>-->
 <!--        <b>选择审批领导：</b> -->
 <!--        <a-select show-search placeholder="请选择审批领导"-->
@@ -244,7 +244,7 @@ import {getUserInfo} from "@/util/storage";
           disasterType: [{ required: true, message: '请选择灾种', trigger: 'change'}],
           warningLevel: [{ required: true, message: '请选择预警级别', trigger: 'change'}],
           content: [{ required: true, message: '请输入信息内容', trigger: 'blur'}],
-          receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
+          // receiver: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           // recipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]
           // verticalRecipient: [{ required: true, message: '请选择接收单位', trigger: 'change'}],
           // horizontalRecipient: [{ required: true, message: '请选择平级接收人', trigger: 'change'}]

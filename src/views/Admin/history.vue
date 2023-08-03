@@ -1,7 +1,7 @@
 <template>
   <div class="inner">
     <a-row type="flex" justify="space-between" style="margin-bottom: 20px">
-      <a-col :span="6">
+      <a-col :span="4">
         <a-radio-group v-model="search.searchParams.emergType" @change="getData">
           <a-radio-button :value="null">
             全部
@@ -14,7 +14,7 @@
           </a-radio-button>
         </a-radio-group>
       </a-col>
-      <a-col :span="18">
+      <a-col :span="20">
         <a-row type="flex" justify="end" :gutter="18">
           <a-col :span="8">
             <a-range-picker
@@ -29,7 +29,7 @@
           <a-col :span="6">
             <a-input v-model="search.searchParams.publishingUnit" placeholder="单位名称" style="width: 100%"/>
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="searchData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -140,6 +140,7 @@ const columns = [{
   {
     title: '操作',
     dataIndex: 'operation',
+    width: '15%',
     scopedSlots: {
       customRender: 'operation'
     },

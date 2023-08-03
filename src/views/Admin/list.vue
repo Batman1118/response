@@ -29,7 +29,7 @@
                 style="width: 100%"
             />
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="searchData">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -176,7 +176,7 @@ import {getUserInfo} from "@/util/storage";
           {
             title: '操作',
             dataIndex: 'operation',
-            width: '15%',
+            width: '18%',
             scopedSlots: {
               customRender: 'operation'
             },

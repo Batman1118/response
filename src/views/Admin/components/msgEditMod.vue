@@ -3,7 +3,7 @@
       :title="title"
       :visible="visible"
       centered
-      width="50%"
+      width="75%"
       @cancel="handleCancel"
       :afterClose="clearMod"
       :footer="null"

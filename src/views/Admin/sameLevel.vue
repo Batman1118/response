@@ -9,10 +9,10 @@
           <a-col :span="6">
             <a-input v-model="search.searchParams.company" placeholder="单位名称" style="width: 100%"/>
           </a-col>
-          <a-col :span="4" v-if="unittype == null || !unittype">
+          <a-col :span="6" v-if="unittype == null || !unittype">
             <a-cascader :options="areaData" v-model="areaVal" placeholder="所属区域" expandTrigger="hover" :fieldNames="fieldNames" changeOnSelect @change="onChange" style="width: 100%"/>
           </a-col>
-          <a-col :span="4">
+          <a-col :span="6">
             <a-button type="primary" @click="getUserList">查询</a-button>
             <a-button style="margin-left: 12px" @click="resetSearch">重置</a-button>
           </a-col>
@@ -100,6 +100,7 @@ export default {
         },
         {
           title: '操作',
+          width: '12%',
           key: 'action',
           scopedSlots: { customRender: 'action' }
         },
