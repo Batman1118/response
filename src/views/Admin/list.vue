@@ -344,6 +344,7 @@ import {getUserInfo} from "@/util/storage";
         const t = this
         t.read(data.id)
         t.$refs.msgDetail.getDetails(id)
+        t.$refs.msgDetail.getMeasures(data.id)
         t.$refs.msgDetail.visible = true
       },
 

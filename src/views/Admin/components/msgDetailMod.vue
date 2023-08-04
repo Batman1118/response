@@ -50,6 +50,14 @@
           <a-button @click="viewFile(item)" type="link" v-for="(item,index) in details.attachments" :key="index"><a-icon type="paper-clip"/>{{item.attachementName}}</a-button>
         </a-col>
       </a-row>
+      <a-row :gutter="24" v-if="showMeasure == true"><a-col :span="4">基础措施</a-col>
+        <a-col :span="14" class="noBorder">
+          <div v-for="(item,index) in measureDetail.baseMeasures" :key="index">
+            {{index+1}}、{{item}}
+          </div>
+        </a-col>
+      </a-row>
+      <a-row :gutter="24" v-if="showMeasure == true"><a-col :span="4">响应反馈</a-col><a-col :span="14">{{measureDetail.responseMeasure}}</a-col></a-row>
     </div>
   </a-modal>
 </template>
@@ -58,6 +66,7 @@
 import {getReviewDetailByWorker} from "@/api/review";
 import axios from "axios";
 import Cookies from "js-cookie";
+import {responseMeasure} from "@/api/new";
 export default {
   name: 'msgDetailMod',
   data () {
@@ -65,6 +74,8 @@ export default {
       visible: false,
       confirmLoading: false,
       details: {},
+      measureDetail: {},
+      showMeasure: false,
       riskOptions: [
         {name: '地震',value: 1},
         {name: '气象',value: 3},
@@ -96,6 +107,23 @@ export default {
           t.details = res.data.data
         }else{
           t.$message.error('查询信息详情失败')
+        }
+      }else{
+        this.$message.error(res.data.msg)
+      }
+    },
+
+    async getMeasures(id){
+      const t = this
+      const res = await responseMeasure({id:id})
+      if(res.data.code == 100){
+        const data = res.data.data
+        if(data.baseMeasures && data.baseMeasures.length > 0){
+          t.measureDetail = data
+          t.showMeasure = true
+        }else{
+          t.measureDetail = {}
+          t.showMeasure = false
         }
       }else{
         this.$message.error(res.data.msg)
