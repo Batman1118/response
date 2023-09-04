@@ -35,7 +35,7 @@
         <a-col :span="4">接收人</a-col>
         <a-col :span="20">
         <b>本次共发送信息给 {{details.recipients.length}}人：</b><br/><br/>
-        {{details.recipients.map(i=>i.realName + '(' + i.phone + ')').join(',')}}
+        {{details.recipients.map(i=>i.realName + '(' + i.phone.replace(/(\d{3})\d{4}(\d+)/, "$1****$2") + ')').join(',')}}
         </a-col>
       </a-row>
       <a-row :gutter="24" v-if="details.acceptingUnitIds && details.acceptingUnitIds.length>0">
