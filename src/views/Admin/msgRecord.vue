@@ -34,7 +34,7 @@
           </p>
           <template #actions>
             <div>
-              接收号码：<span>{{item.recipients.map(i=>i.realName + '(' + i.phone + ')').join('、')}}</span>
+              接收号码：<span>{{item.recipients.map(i=>i.realName + '(' + i.phone.replace(/(\d{3})\d{4}(\d+)/, "$1****$2") + ')').join('、')}}</span>
             </div>
             <div>
               <a-button type="primary" @click="viewDetails(item)">查看详情</a-button>
