@@ -490,10 +490,16 @@ export default {
         return file;
       });
       this.fileList = fileList;
+      console.log(this.fileList,'list')
     },
 
     removeFile(file){
-      this.delList.push(file.response.data.id)
+      if(this.title == '信息转发'){
+        this.delList.push(file.uid)
+      }else{
+        this.delList.push(file.response.data.id)
+      }
+      console.log(this.fileList,this.form,'form')
     },
 
     async deleteFile(){

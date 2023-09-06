@@ -45,6 +45,12 @@ export default {
           if(i.Children.find(item=>item.MenuTitle == '常规群发')){
             i.Children = i.Children.filter(j=>j.MenuTitle !== '常规群发')
           }
+          if(i.Children.find(item=>item.MenuTitle == '短信记录')){
+            i.Children = i.Children.filter(j=>j.MenuTitle !== '短信记录')
+          }
+          if(i.Children.find(item=>item.MenuTitle == '原通讯录')){
+            i.Children = i.Children.filter(j=>j.MenuTitle !== '原通讯录')
+          }
           return i
         })
       }

@@ -17,6 +17,11 @@
           </div>
           <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
           <div class="item">
+            <p>总应叫应数</p>
+            <span>{{basicData.responsesThisMonthSum}}</span>
+          </div>
+          <a-divider type="vertical" style="height: 100%; margin: 0px 16px"/>
+          <div class="item">
             <p>叫应数</p>
             <span>{{basicData.responsesThisMonthNum}}</span>
           </div>
