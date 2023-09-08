@@ -42,8 +42,8 @@
         <Review />
       </div>
       <div class="right">
-        <QuickNavigation />
-        <IndexEcharts style="margin-top: 20px"/>
+<!--        <QuickNavigation />-->
+        <IndexEcharts/>
         <Team style="margin-top: 20px"/>
       </div>
     </div>

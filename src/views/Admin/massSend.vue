@@ -278,7 +278,7 @@ import {getUserInfo} from "@/util/storage";
             for(let j of bookData){
               j.id = j.id.toString() + '-' + '1'
               j.userInfos.map((item)=>{
-                  item.name = item.name + '('+ item.company + ' ' + item.phone + ')'
+                  item.name = item.name + '('+ item.company + ' ' + item.phone.replace(/(\d{3})\d{4}(\d+)/, "$1****$2") + ')'
                   return item
               })
             }
